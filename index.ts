@@ -40,7 +40,7 @@ const go = async () => {
 	];
 
 
-	main(mainConfig, genModels);
+	main(mainConfig, genModels, "art");
 };
 
 go().catch((err) => {

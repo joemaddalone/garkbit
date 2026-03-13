@@ -25,6 +25,7 @@ export type PhotoTeam = {
  */
 function team(mode: "art"): ArtTeam;
 function team(mode: "photo"): PhotoTeam;
+function team(mode: "art" | "photo"): ArtTeam | PhotoTeam;
 function team(mode: "art" | "photo"): ArtTeam | PhotoTeam {
 	if (mode === "art") {
 		return {

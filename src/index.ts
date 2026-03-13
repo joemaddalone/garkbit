@@ -8,7 +8,7 @@ import type { Config } from "./types.js";
 import * as os from "node:os";
 
 
-export default async (config: Config, genModels: string[], preserveContextMemory?: boolean) => {
+export default async (config: Config, genModels: string[], medium: "art" | "photo", preserveContextMemory?: boolean) => {
 
 	if (!genModels || genModels.length === 0) {
 		console.log(
@@ -35,7 +35,7 @@ export default async (config: Config, genModels: string[], preserveContextMemory
 
 	const trackDir = path.join(os.homedir(), config.TRACK_PATH, config.trackNum.toString());
 
-	const agents = team("art");
+	const agents = team(medium);
 	const { promptWriterModel, imageReaderModel } = await llms(config);
 
 	const initCycleResult = await initCycle(
