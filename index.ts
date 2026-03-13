@@ -1,4 +1,4 @@
-import config from "./src/config.json";
+import config from "./config.json";
 import type { Config } from "./src/types.js";
 import main from "./src/index.ts";
 
