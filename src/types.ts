@@ -64,5 +64,8 @@ export type Config = {
 			f2k9b: string;
 		};
 	};
+	numCycles: number;
+	trackNum: number;
+	initialPrompt?: string;
 };
 

@@ -12,8 +12,20 @@ import type { ArtAnalysis, PhotoAnalysis, Config } from "../types";
  * carry the mode-specific behaviour.
  */
 async function executeCycle<TAnalysis extends ArtAnalysis | PhotoAnalysis>(
-	imageReader: { forward: (input: { model: LanguageModel; image: string; context?: string; }) => Promise<TAnalysis>; },
-	promptWriter: { forward: (input: { model: LanguageModel; analysis: TAnalysis; cycle: number; }) => Promise<{ prompt: string; } | undefined>; },
+	imageReader: {
+		forward: (input: {
+			model: LanguageModel;
+			image: string;
+			context?: string;
+		}) => Promise<TAnalysis>;
+	},
+	promptWriter: {
+		forward: (input: {
+			model: LanguageModel;
+			analysis: TAnalysis;
+			cycle: number;
+		}) => Promise<{ prompt: string; } | undefined>;
+	},
 	genModel: string,
 	imageReaderModel: LanguageModel,
 	promptWriterModel: LanguageModel,
@@ -71,7 +83,7 @@ async function executeCycle<TAnalysis extends ArtAnalysis | PhotoAnalysis>(
  * @param promptWriterModel Language model used for prompt writing.
  * @param trackDir          Absolute path to the track output directory.
  * @param cycle             Current cycle number (1-based).
- * @param config            Application configuration.
+ * @param config             Application configuration.
  * @param preserveContext   If true, feed the original prompt back as context.
  */
 export default async (
@@ -95,9 +107,29 @@ export default async (
 	}
 
 	if (team.mode === "art") {
-		await executeCycle(team.imageReader, team.promptWriter, genModel, imageReaderModel, promptWriterModel, trackDir, cycle, config, prevPrompt);
+		await executeCycle(
+			team.imageReader,
+			team.promptWriter,
+			genModel,
+			imageReaderModel,
+			promptWriterModel,
+			trackDir,
+			cycle,
+			config,
+			prevPrompt,
+		);
 	} else {
-		await executeCycle(team.imageReader, team.promptWriter, genModel, imageReaderModel, promptWriterModel, trackDir, cycle, config, prevPrompt);
+		await executeCycle(
+			team.imageReader,
+			team.promptWriter,
+			genModel,
+			imageReaderModel,
+			promptWriterModel,
+			trackDir,
+			cycle,
+			config,
+			prevPrompt,
+		);
 	}
 
 	console.log(`✅ Cycle ${cycle} complete!`);

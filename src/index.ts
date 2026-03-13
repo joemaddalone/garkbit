@@ -8,15 +8,17 @@ import type { Config } from "./types.js";
 import * as os from "node:os";
 
 
-export default async (config: Config & { numCycles: string; trackNum: string; initialPrompt: string; }) => {
-	const numCyclesArg = config.numCycles;
-	const trackNumArg = config.trackNum;
-	const initialPrompt = config.initialPrompt;
+export default async (config: Config, genModels: string[], preserveContextMemory?: boolean) => {
 
-	const firstGenModel = config.MODELS.IMAGE_GENERATORS.zitfp8;
-	const nonFirstGenModel = config.MODELS.IMAGE_GENERATORS.zitfp8;
-	const preserveContextMemory = false;
+	if (!genModels || genModels.length === 0) {
+		console.log(
+			"Needs one or two generative models.",
+		);
+		process.exit(1);
+	}
 
+	const firstGenModel = genModels[0] as string;
+	const nonFirstGenModel = genModels.length > 1 ? genModels[1] as string : genModels[0] as string;
 
 	unloadModel(config.MODELS.IMAGE_READER, config);
 	unloadModel(config.MODELS.PROMPT_WRITER, config);
@@ -24,28 +26,24 @@ export default async (config: Config & { numCycles: string; trackNum: string; in
 		unloadModel(model, config);
 	}
 
-	if (!numCyclesArg || !trackNumArg) {
+	if (!config.numCycles || !config.trackNum) {
 		console.log(
 			"Usage: bun run automate.ts <num_cycles> <track_number> [initial_prompt]",
 		);
 		process.exit(1);
 	}
 
-	const numCycles = parseInt(numCyclesArg, 10);
-	const trackNum = parseInt(trackNumArg, 10);
-	const trackDir = path.join(os.homedir(), config.TRACK_PATH, trackNum.toString());
+	const trackDir = path.join(os.homedir(), config.TRACK_PATH, config.trackNum.toString());
 
 	const agents = team("art");
 	const { promptWriterModel, imageReaderModel } = await llms(config);
 
 	const initCycleResult = await initCycle(
-		numCycles,
 		trackDir,
 		agents.promptZero,
 		firstGenModel,
 		promptWriterModel,
 		config,
-		initialPrompt,
 	);
 
 	if (!initCycleResult) {
