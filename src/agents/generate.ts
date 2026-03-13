@@ -1,19 +1,23 @@
 import fs from "node:fs";
 import unloadModel from "../lib/unload-model";
 
-type GeneratorResponse = {
-	image: string;
+type GenerateOptions = {
+	prompt: string;
+	targetPath: string;
+	model: string;
+	width: number;
+	height: number;
+	steps: number;
+	aiURL: string;
 };
 
-export default async (
-	prompt: string,
-	targetPath: string,
-	model: string,
-	width: number,
-	height: number,
-	steps: number,
-	aiURL: string,
-) => {
+/**
+ * Generates an image via the Ollama API and writes the result to disk.
+ *
+ * @param options  All parameters needed for the generation request.
+ */
+export default async (options: GenerateOptions) => {
+	const { prompt, targetPath, model, width, height, steps, aiURL } = options;
 	unloadModel(model, { AI_URL: aiURL });
 
 	try {
@@ -34,11 +38,11 @@ export default async (
 				},
 			}),
 		});
-		const response = (await req.json()) as GeneratorResponse;
+		const response = (await req.json()) as { image: string };
 
 		if (response.image) {
 			console.log(`🔵 Image received from ${model}. Saving to ${targetPath}...`);
-			const buffer = Buffer.from(response.image as string, "base64");
+			const buffer = Buffer.from(response.image, "base64");
 			fs.writeFileSync(targetPath, buffer);
 		} else {
 			console.error(`🔴 No image data received from ${model}.`);

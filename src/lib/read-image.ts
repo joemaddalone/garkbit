@@ -4,6 +4,10 @@ import resizer from "./resizer";
 import type { ArtAnalysis, PhotoAnalysis } from "../types";
 import type { LanguageModel } from "ai";
 
+/**
+ * Reads an image from disk, resizes it for the vision model, and returns
+ * a structured analysis produced by the given image-reader agent.
+ */
 export default async <T extends ArtAnalysis | PhotoAnalysis>(
 	model: LanguageModel,
 	imageReader: {

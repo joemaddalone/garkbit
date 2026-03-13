@@ -1,5 +1,6 @@
 import type { LanguageModel } from "ai";
 
+/** Structured analysis returned by the art image-reader agent. */
 export type ArtAnalysis = {
 	subject: string;
 	description: string;
@@ -15,18 +16,7 @@ export type ArtAnalysis = {
 	overallFeeling: string;
 };
 
-export type ImageReader_Art = {
-	forward: (input: { model: LanguageModel; image: string; context?: string; }) => Promise<ArtAnalysis>;
-};
-
-export type PromptWriter_Art = {
-	forward: (input: { model: LanguageModel; analysis: ArtAnalysis; cycle: number; }) => Promise<{ prompt: string; }>;
-};
-
-export type PromptZero_Art = {
-	forward: (input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
-};
-
+/** Structured analysis returned by the photo image-reader agent. */
 export type PhotoAnalysis = {
 	subject: string;
 	style: string;
@@ -44,18 +34,17 @@ export type PhotoAnalysis = {
 	overallFeeling: string;
 };
 
-export type ImageReader_Photo = {
-	forward: (input: { model: LanguageModel; image: string; context?: string; }) => Promise<PhotoAnalysis>;
+/** Contract for a prompt-zero agent (art variant). */
+export type PromptZero_Art = {
+	forward: (input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
 };
 
-export type PromptWriter_Photo = {
-	forward: (input: { model: LanguageModel; analysis: PhotoAnalysis; cycle: number; }) => Promise<{ prompt: string; }>;
-};
-
+/** Contract for a prompt-zero agent (photo variant). */
 export type PromptZero_Photo = {
 	forward: (input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
 };
 
+/** Application-level configuration loaded from config.json. */
 export type Config = {
 	AI_URL: string;
 	API_KEY: string;
@@ -76,3 +65,4 @@ export type Config = {
 		};
 	};
 };
+

@@ -2,10 +2,13 @@ import { spawnSync } from "node:child_process";
 import type { Config } from "../types";
 
 /**
- * Unloads a model from the AI server.  No need to involve fetch here, just a curl.
- * @param model The model to unload.
+ * Unloads a model from the Ollama server by sending a keep_alive=0 request.
+ * This frees GPU/CPU resources between generation steps.
+ *
+ * @param model  The model identifier to unload.
+ * @param config  Must contain `AI_URL` pointing at the Ollama server.
  */
-export default (model: string, config: Partial<Config>) => {
+export default (model: string, config: Pick<Config, "AI_URL">) => {
 	const modelObject = JSON.stringify({ model: model, keep_alive: 0 });
 	console.log(`🔵 Unloading model ${model}...`);
 	spawnSync(

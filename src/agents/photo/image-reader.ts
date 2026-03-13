@@ -1,6 +1,7 @@
 import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import { z } from "zod";
+import parseLlmJson from "../../lib/parse-llm-json";
 
 const schema = z.object({
 	subject: z.string().describe("The main subject of the image"),
@@ -29,7 +30,12 @@ const schema = z.object({
 	overallFeeling: z.string(),
 });
 
-// image input is a base64 encoded image
+/**
+ * Analyzes a photograph using a vision LLM and returns structured metadata.
+ * @param input.model  The vision language model to use.
+ * @param input.image  Base64-encoded image data.
+ * @param input.context  Optional previous prompt for continuity.
+ */
 export async function forward(
 	input = { model: undefined, image: "" } as { model: LanguageModel | undefined; image: string; context?: string; },
 ) {
@@ -59,24 +65,5 @@ Respond with ONLY the JSON object.`,
 		],
 	});
 
-	try {
-		const jsonMatch = text.match(/\{[\s\S]*\}/);
-		const jsonString = jsonMatch ? jsonMatch[0] : text;
-		const parsed = JSON.parse(jsonString);
-		// if any of the values are arrays or objects, convert them to a single string
-		for (const key in parsed) {
-			if (Array.isArray(parsed[key])) {
-				parsed[key] = parsed[key].join(", ");
-			} else if (typeof parsed[key] === "object" && parsed[key] !== null) {
-				parsed[key] = Object.entries(parsed[key])
-					.map(([k, v]) => `${k}: ${v}`)
-					.join(", ");
-			}
-		}
-		return schema.parse(parsed);
-	} catch (e) {
-		console.error("Failed to parse image reader output:", text);
-		console.error("Parse error:", e instanceof Error ? e.message : String(e));
-		throw new Error("Image reader failed to produce valid JSON");
-	}
+	return parseLlmJson(text, schema);
 }

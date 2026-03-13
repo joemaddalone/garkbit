@@ -4,6 +4,13 @@ import type { PromptZero_Art, PromptZero_Photo, Config } from "../types";
 import type { LanguageModel } from "ai";
 import generate from "../agents/generate";
 
+/**
+ * Handles the initial (cycle-0) setup: creates the track directory if needed,
+ * generates the first image from a user seed, and determines how many cycles
+ * still need to run.
+ *
+ * @returns The number of remaining cycles to execute, or `undefined` if all are done.
+ */
 export default async (
 	numCycles: number,
 	trackDir: string,
@@ -23,11 +30,19 @@ export default async (
 	const image0 = resolve(trackDir, "_0.png");
 	if (initialPrompt && !fs.existsSync(image0)) {
 		console.log(`\n🚀 Starting Cycle 0 (Initial Prompt)...`);
-		fs.writeFileSync(resolve(trackDir, `prompt_0.txt`), initialPrompt);
+		fs.writeFileSync(resolve(trackDir, "prompt_0.txt"), initialPrompt);
 		const { prompt } = await promptZero.forward({ model: promptWriterModel, initial_prompt: initialPrompt });
-		fs.writeFileSync(resolve(trackDir, `prompt_0z.txt`), prompt);
+		fs.writeFileSync(resolve(trackDir, "prompt_0z.txt"), prompt);
 
-		await generate(prompt, image0, model, config.GENERATE_DEFAULTS.WIDTH, config.GENERATE_DEFAULTS.HEIGHT, config.GENERATE_DEFAULTS.STEPS, config.AI_URL);
+		await generate({
+			prompt,
+			targetPath: image0,
+			model,
+			width: config.GENERATE_DEFAULTS.WIDTH,
+			height: config.GENERATE_DEFAULTS.HEIGHT,
+			steps: config.GENERATE_DEFAULTS.STEPS,
+			aiURL: config.AI_URL,
+		});
 		console.log(`✅ Cycle 0 complete!`);
 	} else if (!fs.existsSync(image0)) {
 		console.error(
@@ -42,7 +57,7 @@ export default async (
 		.filter(
 			(f) => f.startsWith("_") && f.endsWith(".png") && !f.includes(".out."),
 		)
-		.map((f) => parseInt(f.match(/_(\d+)\.png/)?.[1] || "-1", 10))
+		.map((f) => parseInt(f.match(/_(\\d+)\\.png/)?.[1] || "-1", 10))
 		.filter((c) => c >= 0);
 
 	const lastCycleDetected =
@@ -56,10 +71,4 @@ export default async (
 	}
 
 	return cyclesToRun;
-
-	// for (let i = 1; i <= cyclesToRun; i++) {
-	// 	await runCycle(trackDir, lastCycleDetected + i);
-	// }
-
-	// console.log(`\n✨ Automation finished!`);
 };
