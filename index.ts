@@ -39,7 +39,7 @@ const go = async () => {
 	// The first model is used for the first cycle, the second model is used for the remaining cycles
 	// If you only want to use one model, just set one model, or set both to the same model
 	const genModels = [
-		config.MODELS.IMAGE_GENERATORS.f2k4b,
+		config.MODELS.IMAGE_GENERATORS.zitfp8,
 		config.MODELS.IMAGE_GENERATORS.zitfp8,
 	];
 

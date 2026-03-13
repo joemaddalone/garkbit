@@ -17,10 +17,10 @@ export default async (
 	model: string,
 	promptWriterModel: LanguageModel,
 	config: Config,
-): Promise<number | undefined> => {
+): Promise<{ cyclesToRun: number; lastCycleDetected: number; } | undefined> => {
 
 	if (!fs.existsSync(trackDir)) {
-		console.log(`📂 Creating directory: ${trackDir}`);
+		console.log(`🔵 Creating directory: ${trackDir}`);
 		fs.mkdirSync(trackDir, { recursive: true });
 	}
 
@@ -55,8 +55,9 @@ export default async (
 		.filter(
 			(f) => f.startsWith("_") && f.endsWith(".png") && !f.includes(".out."),
 		)
-		.map((f) => parseInt(f.match(/_(\\d+)\\.png/)?.[1] || "-1", 10))
+		.map((f) => parseInt(f.match(/_(\d+)\.png/)?.[1] || "-1", 10))
 		.filter((c) => c >= 0);
+
 
 	const lastCycleDetected =
 		cyclesDetected.length > 0 ? Math.max(...cyclesDetected) : 0;
@@ -68,5 +69,5 @@ export default async (
 		return;
 	}
 
-	return cyclesToRun;
+	return { cyclesToRun, lastCycleDetected };
 };

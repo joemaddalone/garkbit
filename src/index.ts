@@ -7,7 +7,6 @@ import llms from "./llms.js";
 import type { Config } from "./types.js";
 import * as os from "node:os";
 
-
 export default async (config: Config, genModels: string[], medium: "art" | "photo", preserveContextMemory?: boolean) => {
 
 	if (!genModels || genModels.length === 0) {
@@ -46,12 +45,16 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 		config,
 	);
 
-	if (!initCycleResult) {
+
+	if (!initCycleResult || !initCycleResult.cyclesToRun) {
 		console.log(`🟢 Automation finished!`);
 		process.exit(0);
 	}
+	const start = initCycleResult.lastCycleDetected + 1;
+	const end = initCycleResult.cyclesToRun - 1 + start;
+	console.log(`🟢 Starting cycles ${start} to ${end}...`);
 
-	for (let i = 1; i <= initCycleResult; i++) {
+	for (let i = start; i <= end; i++) {
 		await runCycle(agents, nonFirstGenModel, imageReaderModel, promptWriterModel, trackDir, i, config, preserveContextMemory);
 	}
 

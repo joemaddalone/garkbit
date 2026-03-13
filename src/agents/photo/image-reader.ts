@@ -44,7 +44,7 @@ export async function forward(
 	}
 	const { text } = await generateText({
 		model: input.model,
-		temperature: 0.2,
+		temperature: 0.7,
 		maxOutputTokens: 128000,
 		messages: [
 			{

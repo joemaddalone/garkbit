@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import unloadModel from "../lib/unload-model";
 
 type GenerateOptions = {
 	prompt: string;
@@ -18,8 +17,6 @@ type GenerateOptions = {
  */
 export default async (options: GenerateOptions) => {
 	const { prompt, targetPath, model, width, height, steps, aiURL } = options;
-	unloadModel(model, { AI_URL: aiURL });
-
 	try {
 		const req = await fetch(`${aiURL}/api/generate`, {
 			method: "POST",
@@ -34,11 +31,11 @@ export default async (options: GenerateOptions) => {
 				stream: false,
 				steps,
 				options: {
-					temperature: 1,
+					temperature: 0.5,
 				},
 			}),
 		});
-		const response = (await req.json()) as { image: string };
+		const response = (await req.json()) as { image: string; };
 
 		if (response.image) {
 			console.log(`🔵 Image received from ${model}. Saving to ${targetPath}...`);
