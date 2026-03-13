@@ -16,7 +16,7 @@ export async function forward(input: {
 
 	const { output } = await generateText({
 		model: input.model,
-		temperature: 1,
+		temperature: 0.7,
 		maxOutputTokens: 64000,
 		output: Output.object({
 			schema,

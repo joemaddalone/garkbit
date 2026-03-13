@@ -132,5 +132,5 @@ export default async (
 		);
 	}
 
-	console.log(`✅ Cycle ${cycle} complete!`);
+	console.log(`🟢 Cycle ${cycle} complete!`);
 };

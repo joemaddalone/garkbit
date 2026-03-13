@@ -12,7 +12,7 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 
 	if (!genModels || genModels.length === 0) {
 		console.log(
-			"Needs one or two generative models.",
+			"🔴 Needs one or two generative models.",
 		);
 		process.exit(1);
 	}
@@ -28,7 +28,7 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 
 	if (!config.numCycles || !config.trackNum) {
 		console.log(
-			"Usage: bun run automate.ts <num_cycles> <track_number> [initial_prompt]",
+			"🔴 Usage: bun run automate.ts <num_cycles> <track_number> [initial_prompt]",
 		);
 		process.exit(1);
 	}
@@ -47,7 +47,7 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 	);
 
 	if (!initCycleResult) {
-		console.log(`\n✨ Automation finished!`);
+		console.log(`🟢 Automation finished!`);
 		process.exit(0);
 	}
 
@@ -55,5 +55,5 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 		await runCycle(agents, nonFirstGenModel, imageReaderModel, promptWriterModel, trackDir, i, config, preserveContextMemory);
 	}
 
-	console.log(`\n✨ Automation finished!`);
+	console.log(`🟢 Automation finished!`);
 };

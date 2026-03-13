@@ -27,7 +27,7 @@ export default async (
 	// Cycle 0: Handle initial prompt if provided and _0.png doesn't exist
 	const image0 = resolve(trackDir, "_0.png");
 	if (config.initialPrompt && !fs.existsSync(image0)) {
-		console.log(`\n🚀 Starting Cycle 0 (Initial Prompt)...`);
+		console.log(`🟢 Starting Cycle 0 (Initial Prompt)...`);
 		fs.writeFileSync(resolve(trackDir, "prompt_0.txt"), config.initialPrompt);
 		const { prompt } = await promptZero.forward({ model: promptWriterModel, initial_prompt: config.initialPrompt });
 		fs.writeFileSync(resolve(trackDir, "prompt_0z.txt"), prompt);
@@ -41,10 +41,10 @@ export default async (
 			steps: config.GENERATE_DEFAULTS.STEPS,
 			aiURL: config.AI_URL,
 		});
-		console.log(`✅ Cycle 0 complete!`);
+		console.log(`🟢 Cycle 0 complete!`);
 	} else if (!fs.existsSync(image0)) {
 		console.error(
-			`❌ Cycle 0 image (_0.png) not found in ${trackDir} and no initial prompt provided.`,
+			`🔴 Cycle 0 image (_0.png) not found in ${trackDir} and no initial prompt provided.`,
 		);
 		process.exit(1);
 	}
@@ -60,11 +60,11 @@ export default async (
 
 	const lastCycleDetected =
 		cyclesDetected.length > 0 ? Math.max(...cyclesDetected) : 0;
-	console.log(`🔍 Detected last completed cycle: ${lastCycleDetected}`);
+	console.log(`🔵 Detected last completed cycle: ${lastCycleDetected}`);
 
 	const cyclesToRun = config.numCycles - lastCycleDetected;
 	if (cyclesToRun <= 0) {
-		console.log(`✨ All requested ${config.numCycles} cycles are already complete.`);
+		console.log(`🟢 All requested ${config.numCycles} cycles are already complete.`);
 		return;
 	}
 

@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import type { LanguageModel } from "ai";
 import { z } from "zod";
-import { PROMPT_ENGINEER_SYSTEM } from "../prompts";
+import { PROMPT_ENGINEER_SYSTEM_ART } from "../prompts";
 
 const schema = z.object({
 	prompt: z.string(),
@@ -15,9 +15,9 @@ const schema = z.object({
 export async function forward(input: { model: LanguageModel; initial_prompt: string; }) {
 	const { output } = await generateText({
 		model: input.model,
-		temperature: 1,
+		temperature: 0.7,
 		maxOutputTokens: 64000,
-		system: PROMPT_ENGINEER_SYSTEM,
+		system: PROMPT_ENGINEER_SYSTEM_ART,
 		output: Output.object({
 			schema,
 		}),

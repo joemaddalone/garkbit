@@ -15,7 +15,7 @@ const schema = z.object({
 export async function forward(input: { model: LanguageModel; initial_prompt: string; }) {
 	const { output } = await generateText({
 		model: input.model,
-		temperature: 1,
+		temperature: 0.7,
 		maxOutputTokens: 64000,
 		system: PROMPT_ENGINEER_SYSTEM,
 		output: Output.object({
