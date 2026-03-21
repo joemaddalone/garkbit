@@ -12,66 +12,77 @@ import type { ArtAnalysis, PhotoAnalysis, Config } from "../types";
  * carry the mode-specific behaviour.
  */
 async function executeCycle<TAnalysis extends ArtAnalysis | PhotoAnalysis>(
-	imageReader: {
-		forward: (input: {
-			model: LanguageModel;
-			image: string;
-			context?: string;
-		}) => Promise<TAnalysis>;
-	},
-	promptWriter: {
-		forward: (input: {
-			model: LanguageModel;
-			analysis: TAnalysis;
-			cycle: number;
-		}) => Promise<{ prompt: string; } | undefined>;
-	},
-	genModel: string,
-	imageReaderModel: LanguageModel,
-	promptWriterModel: LanguageModel,
-	trackDir: string,
-	cycle: number,
-	config: Config,
-	prevPrompt?: string,
+  imageReader: {
+    forward: (input: {
+      model: LanguageModel;
+      image: string;
+      context?: string;
+    }) => Promise<TAnalysis>;
+  },
+  promptWriter: {
+    forward: (input: {
+      model: LanguageModel;
+      analysis: TAnalysis;
+      cycle: number;
+    }) => Promise<{ prompt: string } | undefined>;
+  },
+  genModel: string,
+  imageReaderModel: LanguageModel,
+  promptWriterModel: LanguageModel,
+  trackDir: string,
+  cycle: number,
+  config: Config,
+  prevPrompt?: string,
 ) {
-	const prevImagePath = `${trackDir}/_${cycle - 1}.png`;
-	if (!fs.existsSync(prevImagePath)) {
-		throw new Error(`Previous image not found: ${prevImagePath}`);
-	}
+  const prevImagePath = `${trackDir}/_${cycle - 1}.png`;
+  if (!fs.existsSync(prevImagePath)) {
+    throw new Error(`Previous image not found: ${prevImagePath}`);
+  }
 
-	console.log(`📝 Analyzing image: _${cycle - 1}.png`);
+  console.log(`📝 Analyzing image: _${cycle - 1}.png`);
 
-	const analysis: TAnalysis = await readImage(
-		imageReaderModel,
-		imageReader,
-		prevImagePath,
-		prevPrompt,
-	);
-	fs.writeFileSync(
-		`${trackDir}/description_${cycle}.txt`,
-		JSON.stringify(analysis, null, 2),
-	);
+  const analysis: TAnalysis = await readImage(
+    imageReaderModel,
+    imageReader,
+    prevImagePath,
+    prevPrompt,
+  );
+  fs.writeFileSync(
+    `${trackDir}/description_${cycle}.txt`,
+    JSON.stringify(analysis, null, 2),
+  );
 
-	console.log(`✍️  Generating new prompt...`);
-	const promptResponse = await promptWriter.forward({
-		model: promptWriterModel,
-		analysis,
-		cycle,
-	});
-	if (!promptResponse)
-		throw new Error("Failed to generate prompt from prompt writer");
-	const { prompt } = promptResponse;
-	fs.writeFileSync(`${trackDir}/prompt_${cycle}.txt`, prompt);
+  console.log(`✍️  Generating new prompt...`);
+  const promptResponse = await promptWriter.forward({
+    model: promptWriterModel,
+    analysis,
+    cycle,
+  });
+  if (!promptResponse)
+    throw new Error("Failed to generate prompt from prompt writer");
+  const { prompt } = promptResponse;
+  fs.writeFileSync(`${trackDir}/prompt_${cycle}.txt`, prompt);
 
-	await generate({
-		prompt,
-		targetPath: `${trackDir}/_${cycle}.png`,
-		model: genModel,
-		width: config.GENERATE_DEFAULTS.WIDTH,
-		height: config.GENERATE_DEFAULTS.HEIGHT,
-		steps: config.GENERATE_DEFAULTS.STEPS,
-		aiURL: config.AI_URL,
-	});
+  const useLightCycle = config.LIGHT_CYCLES && config.LIGHT_CYCLES > cycle;
+  const width = useLightCycle
+    ? config.GENERATE_DEFAULTS.WIDTH / 2
+    : config.GENERATE_DEFAULTS.WIDTH;
+  const height = useLightCycle
+    ? config.GENERATE_DEFAULTS.WIDTH / 2
+    : config.GENERATE_DEFAULTS.WIDTH;
+  const steps = useLightCycle
+    ? config.GENERATE_DEFAULTS.STEPS / 2
+    : config.GENERATE_DEFAULTS.STEPS;
+
+  await generate({
+    prompt,
+    targetPath: `${trackDir}/_${cycle}.png`,
+    model: genModel,
+    width,
+    height,
+    steps,
+    aiURL: config.AI_URL,
+  });
 }
 
 /**
@@ -87,50 +98,50 @@ async function executeCycle<TAnalysis extends ArtAnalysis | PhotoAnalysis>(
  * @param preserveContext   If true, feed the original prompt back as context.
  */
 export default async (
-	team: ArtTeam | PhotoTeam,
-	genModel: string,
-	imageReaderModel: LanguageModel,
-	promptWriterModel: LanguageModel,
-	trackDir: string,
-	cycle: number,
-	config: Config,
-	preserveContext?: boolean,
+  team: ArtTeam | PhotoTeam,
+  genModel: string,
+  imageReaderModel: LanguageModel,
+  promptWriterModel: LanguageModel,
+  trackDir: string,
+  cycle: number,
+  config: Config,
+  preserveContext?: boolean,
 ) => {
-	console.log(`\n🚀 Starting Cycle ${cycle}...`);
+  console.log(`\n🚀 Starting Cycle ${cycle}...`);
 
-	let prevPrompt: string | undefined;
-	if (preserveContext) {
-		const prevPromptPath = path.join(trackDir, "prompt_0.txt");
-		prevPrompt = fs.existsSync(prevPromptPath)
-			? fs.readFileSync(prevPromptPath, "utf-8")
-			: undefined;
-	}
+  let prevPrompt: string | undefined;
+  if (preserveContext) {
+    const prevPromptPath = path.join(trackDir, "prompt_0.txt");
+    prevPrompt = fs.existsSync(prevPromptPath)
+      ? fs.readFileSync(`${prevPromptPath.split('_')[0]}_0.txt`, "utf-8")
+      : undefined;
+  }
 
-	if (team.mode === "art") {
-		await executeCycle(
-			team.imageReader,
-			team.promptWriter,
-			genModel,
-			imageReaderModel,
-			promptWriterModel,
-			trackDir,
-			cycle,
-			config,
-			prevPrompt,
-		);
-	} else {
-		await executeCycle(
-			team.imageReader,
-			team.promptWriter,
-			genModel,
-			imageReaderModel,
-			promptWriterModel,
-			trackDir,
-			cycle,
-			config,
-			prevPrompt,
-		);
-	}
+  if (team.mode === "art") {
+    await executeCycle(
+      team.imageReader,
+      team.promptWriter,
+      genModel,
+      imageReaderModel,
+      promptWriterModel,
+      trackDir,
+      cycle,
+      config,
+      prevPrompt,
+    );
+  } else {
+    await executeCycle(
+      team.imageReader,
+      team.promptWriter,
+      genModel,
+      imageReaderModel,
+      promptWriterModel,
+      trackDir,
+      cycle,
+      config,
+      prevPrompt,
+    );
+  }
 
-	console.log(`🟢 Cycle ${cycle} complete!`);
+  console.log(`🟢 Cycle ${cycle} complete!`);
 };

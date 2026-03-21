@@ -55,7 +55,10 @@ export default async (config: Config, genModels: string[], medium: "art" | "phot
 	console.log(`🟢 Starting cycles ${start} to ${end}...`);
 
 	for (let i = start; i <= end; i++) {
-		await runCycle(agents, nonFirstGenModel, imageReaderModel, promptWriterModel, trackDir, i, config, preserveContextMemory);
+		const useLightCycle = config.LIGHT_CYCLES && config.LIGHT_CYCLES > i;
+		const mod = useLightCycle ? firstGenModel : nonFirstGenModel
+
+		await runCycle(agents, mod, imageReaderModel, promptWriterModel, trackDir, i, config, preserveContextMemory);
 	}
 
 	console.log(`🟢 Automation finished!`);

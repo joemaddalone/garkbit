@@ -49,6 +49,7 @@ export type Config = {
 	AI_URL: string;
 	API_KEY: string;
 	TRACK_PATH: string;
+	LIGHT_CYCLES?: number;
 	GENERATE_DEFAULTS: {
 		WIDTH: number;
 		HEIGHT: number;

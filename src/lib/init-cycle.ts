@@ -32,13 +32,17 @@ export default async (
 		const { prompt } = await promptZero.forward({ model: promptWriterModel, initial_prompt: config.initialPrompt });
 		fs.writeFileSync(resolve(trackDir, "prompt_0z.txt"), prompt);
 
+		const width = config.LIGHT_CYCLES ? config.GENERATE_DEFAULTS.WIDTH / 2 : config.GENERATE_DEFAULTS.WIDTH
+		const height = config.LIGHT_CYCLES ? config.GENERATE_DEFAULTS.WIDTH / 2 : config.GENERATE_DEFAULTS.WIDTH
+		const steps = config.LIGHT_CYCLES ? config.GENERATE_DEFAULTS.STEPS / 2 : config.GENERATE_DEFAULTS.STEPS
+
 		await generate({
 			prompt,
 			targetPath: image0,
 			model,
-			width: config.GENERATE_DEFAULTS.WIDTH,
-			height: config.GENERATE_DEFAULTS.HEIGHT,
-			steps: config.GENERATE_DEFAULTS.STEPS,
+			width,
+			height,
+			steps,
 			aiURL: config.AI_URL,
 		});
 		console.log(`🟢 Cycle 0 complete!`);

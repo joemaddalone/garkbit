@@ -7,6 +7,7 @@
 		"HEIGHT": 1024,
 		"STEPS": 8
 	},
+	"LIGHT_CYCLES": 0,
 	"MODELS": {
 		"PROMPT_WRITER": "hf.co/BennyDaBall/Qwen3-4b-Z-Image-Engineer-V4:Q8_0",
 		"IMAGE_READER": "redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest",

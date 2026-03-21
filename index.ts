@@ -44,7 +44,7 @@ const go = async () => {
 	];
 
 
-	main(mainConfig, genModels, mode || "art");
+	main(mainConfig, genModels, mode || "art", true);
 };
 
 go().catch((err) => {
