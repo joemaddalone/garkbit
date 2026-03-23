@@ -30,11 +30,12 @@ Edit `config.json` to set your models and defaults:
     "HEIGHT": 1024,
     "STEPS": 8,
   },
+  "LIGHT_CYCLES": 0, // Number of light cycles to run (0 = no light cycles)
   "MODELS": {
     "PROMPT_WRITER": "...", // LLM for prompt generation
     "IMAGE_READER": "...", // Vision model for image analysis
     "IMAGE_GENERATORS": {
-      // Available image generation models
+      // Available image generation models, you dont NEED all of these
       "zitbf16": "...",
       "zitfp8": "...",
       "f2k4b": "...",
@@ -47,22 +48,21 @@ Edit `config.json` to set your models and defaults:
 ## Usage
 
 ```bash
-bun run index.ts <num_cycles> <track_number> "[initial_prompt]" "[art|photo]"
+bun run index.ts <num_cycles> "[initial_prompt]" "[art|photo]"
 ```
 
-| Argument         | Description                                        |
-| ---------------- | -------------------------------------------------- |
-| `num_cycles`     | Number of generation cycles to run (≥ 1)           |
-| `track_number`   | Track identifier — output goes to `~/.tracks/<n>/` |
-| `initial_prompt` | Optional seed prompt for cycle 0                   |
+| Argument         | Description                              |
+| ---------------- | ---------------------------------------- |
+| `num_cycles`     | Number of generation cycles to run (≥ 1) |
+| `initial_prompt` | Optional seed prompt for cycle 0         |
 
 **Example:**
 
 ```bash
-bun run index.ts 5 1 "a fox in a misty forest at dawn" "photo"
+bun run index.ts 5 "a fox in a misty forest at dawn" "photo"
 ```
 
-This runs 5 cycles on track 1, starting from the given prompt.
+This runs 5 cycles on the next available track, starting from the given prompt.
 
 ## How It Works
 

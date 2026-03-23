@@ -1,31 +1,23 @@
 import config from "./config.json";
 import main from "./src/index.ts";
-import fs from "node:fs";
-import path from "node:path";
-import * as os from "node:os";
 
 const go = async () => {
 
 	const numCyclesArg = process.argv[2];
-	const initialPrompt = process.argv[3];
+	const trackNumArg = process.argv[3];
 	const mode = process.argv[4] as "art" | "photo";
 
-	if (!numCyclesArg) {
+	if (!numCyclesArg || !trackNumArg) {
 		console.log(
-			"🔴 Usage: bun run index.ts <num_cycles> [initial_prompt] [mode]",
+			"🔴 Usage: bun run retrack.ts <num_cycles> <track_number> [mode]",
 		);
 		process.exit(1);
 	}
 
+
+
 	const numCycles = parseInt(numCyclesArg, 10);
-
-	// read all existing folders in config.TRACK_PATH
-	const trackPath = path.join(os.homedir(), config.TRACK_PATH);
-	const existingTracks = fs.readdirSync(trackPath).map(f => Number(f)).filter(f => !Number.isNaN(f));
-	// sort sequentially
-	existingTracks.sort((a, b) => a - b);
-	const trackNum = (existingTracks.pop() || 0) + 1;
-
+	const trackNum = parseInt(trackNumArg, 10)
 
 	if (numCycles < 1) {
 		console.log("🔴 Number of cycles must be at least 1.");
@@ -41,8 +33,7 @@ const go = async () => {
 	const mainConfig = {
 		...config,
 		numCycles,
-		trackNum,
-		initialPrompt: initialPrompt,
+		trackNum
 	};
 
 	// You need to set at least one of these from the models in config.json and available in Ollama
