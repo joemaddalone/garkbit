@@ -1,10 +1,10 @@
-import { generateText, Output } from "ai";
 import type { LanguageModel } from "ai";
-import { z } from "zod";
-import { PROMPT_ENGINEER_SYSTEM_ART } from "../prompts";
+import { zugar, z } from "zugar";
 
 const schema = z.object({
-	prompt: z.string(),
+	prompt: z.string().meta(
+		{ description: "A verbose image generation prompt for an artwork." },
+	),
 });
 
 /**
@@ -13,26 +13,14 @@ const schema = z.object({
  * @param input.initial_prompt  The user's seed/idea string.
  */
 export async function forward(input: { model: LanguageModel; initial_prompt: string; }) {
-	const { output } = await generateText({
-		model: input.model,
+	const agent = zugar({
+		description: "Generate a verbose image generation prompt for an artwork. Address the art medium, surface type (e.g., aged paper, canvas), artistic style, brushwork or line detail, composition, lighting, color palette, and overall artistic feeling. Return the prompt only for the following",
 		temperature: 0.7,
-		maxOutputTokens: 64000,
-		system: PROMPT_ENGINEER_SYSTEM_ART,
-		output: Output.object({
-			schema,
-		}),
-		messages: [
-			{
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: `Generate a verbose image generation prompt for an artwork. Address the art medium, surface type (e.g., aged paper, canvas), artistic style, brushwork or line detail, composition, lighting, color palette, and overall artistic feeling. Return the prompt only for the following: ${input.initial_prompt}`,
-					},
-				],
-			},
-		],
+		maxTokens: 64000,
+		schema,
+		model: input.model,
+		inputKind: "text",
 	});
 
-	return output;
+	return agent({ text: input.initial_prompt });
 }

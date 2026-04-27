@@ -1,51 +1,36 @@
-import { generateText, Output } from "ai";
-import { z } from "zod";
+import { zugar, z } from "zugar";
 import type { LanguageModel } from "ai";
 import type { ArtAnalysis } from "../../types";
+import schema from "./artschema";
 
-const schema = z.object({
+const outputSchema = z.object({
 	prompt: z.string(),
 });
-
+/**
+ * Analyzes an artwork image using a vision LLM and returns structured metadata.
+ * @param input.model  The vision language model to use.
+ * @param input.image  Base64-encoded image data.
+ * @param input.context  Optional previous prompt for continuity.
+ */
 export async function forward(input: {
 	model: LanguageModel;
 	analysis: ArtAnalysis;
 	cycle: number;
 }) {
-	const { analysis } = input;
+	if (!input.model) {
+		throw new Error("Image reader model not provided");
+	}
 
-	const { output } = await generateText({
-		model: input.model,
+	const agent = zugar({
+		description: "Generate a verbose image generation prompt for an artwork.",
 		temperature: 0.7,
-		maxOutputTokens: 64000,
-		output: Output.object({
-			schema,
-		}),
-		messages: [
-			{
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: `Generate a verbose image generation prompt for an artwork. Address the art medium, surface type, artistic style, brushwork or line detail, composition, lighting, color palette, and overall artistic feeling. Return the prompt only for the following:
-Subject: ${analysis.subject}
-Description: ${analysis.description}
-Tone: ${analysis.tone}
-Medium: ${analysis.medium}
-Surface: ${analysis.surface}
-Artistic Style: ${analysis.artisticStyle}
-Brushwork/Detail: ${analysis.brushworkOrDetail}
-Composition: ${analysis.composition}
-Lighting: ${analysis.lighting}
-Color Palette: ${analysis.colorPalette}
-Notable Traits: ${analysis.notableTraits}
-Overall Feeling: ${analysis.overallFeeling}
-`,
-					},
-				],
-			},
-		],
+		maxTokens: 64000,
+		inputSchema: schema,
+		schema: outputSchema,
+		model: input.model,
+		inputKind: "schema",
 	});
 
-	return output;
+	return await agent({ data: input.analysis });
+
 }
