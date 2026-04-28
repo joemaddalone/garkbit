@@ -50,6 +50,7 @@ export type Config = {
 	API_KEY: string;
 	TRACK_PATH: string;
 	LIGHT_CYCLES?: number;
+	USE_GEN_MODELS: string[];
 	GENERATE_DEFAULTS: {
 		WIDTH: number;
 		HEIGHT: number;

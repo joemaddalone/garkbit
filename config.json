@@ -17,5 +17,6 @@
 			"f2k4b": "x/flux2-klein:4b",
 			"f2k9b": "x/flux2-klein:9b"
 		}
-	}
+	},
+	"USE_GEN_MODELS": ["f2k4b"]
 }

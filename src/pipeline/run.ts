@@ -11,32 +11,32 @@ import os from "node:os";
  * Options for running a garkbit pipeline.
  */
 export interface PipelineRunOptions {
-  /** Art or photo mode */
-  mode: "art" | "photo";
-  /** Number of cycles to run */
-  numCycles: number;
-  /** Track directory (absolute path) */
-  trackDir: string;
-  /** Initial seed prompt (cycle 0) */
-  initialPrompt?: string;
-  /** Image generation model name */
-  genModel: string;
-  /** Second image generation model (for non-light cycles) */
-  genModelSecondary?: string;
-  /** Number of light cycles (0 = none) */
-  lightCycles?: number;
-  /** Whether to preserve context memory across cycles */
-  preserveContextMemory?: boolean;
-  /** Ollama API URL */
-  aiURL: string;
-  /** Prompt writer model name */
-  promptWriterModelName: string;
-  /** Image reader model name */
-  imageReaderModelName: string;
-  /** Language model for prompt writing */
-  promptWriterModel: LanguageModel;
-  /** Language model for image reading */
-  imageReaderModel: LanguageModel;
+	/** Art or photo mode */
+	mode: "art" | "photo";
+	/** Number of cycles to run */
+	numCycles: number;
+	/** Track directory (absolute path) */
+	trackDir: string;
+	/** Initial seed prompt (cycle 0) */
+	initialPrompt?: string;
+	/** Image generation model name */
+	genModel: string;
+	/** Second image generation model (for non-light cycles) */
+	genModelSecondary?: string;
+	/** Number of light cycles (0 = none) */
+	lightCycles?: number;
+	/** Whether to preserve context memory across cycles */
+	preserveContextMemory?: boolean;
+	/** Ollama API URL */
+	aiURL: string;
+	/** Prompt writer model name */
+	promptWriterModelName: string;
+	/** Image reader model name */
+	imageReaderModelName: string;
+	/** Language model for prompt writing */
+	promptWriterModel: LanguageModel;
+	/** Language model for image reading */
+	imageReaderModel: LanguageModel;
 
 	/** Image dimensions */
 	width?: number;
@@ -50,41 +50,43 @@ export interface PipelineRunOptions {
  * Returns the highest cycle number found, or -1 if none exist.
  */
 function detectLastCycle(trackDir: string): number {
-  if (!fs.existsSync(trackDir)) return -1;
+	if (!fs.existsSync(trackDir)) return -1;
 
-  const files = fs.readdirSync(trackDir);
-  const cycles = files
-    .filter((f) => f.startsWith("_") && f.endsWith(".png") && !f.includes(".out."))
-    .map((f) => {
-      const match = f.match(/_(\d+)\.png/);
-      return match?.[1] ? parseInt(match[1], 10) : -1;
-    })
-    .filter((c) => c >= 0);
+	const files = fs.readdirSync(trackDir);
+	const cycles = files
+		.filter(
+			(f) => f.startsWith("_") && f.endsWith(".png") && !f.includes(".out."),
+		)
+		.map((f) => {
+			const match = f.match(/_(\d+)\.png/);
+			return match?.[1] ? parseInt(match[1], 10) : -1;
+		})
+		.filter((c) => c >= 0);
 
-  return cycles.length > 0 ? Math.max(...cycles) : -1;
+	return cycles.length > 0 ? Math.max(...cycles) : -1;
 }
 
 /**
  * Build the NodeDeps from pipeline options.
  */
 function buildNodeDeps(opts: PipelineRunOptions): NodeDeps {
-  return {
-    config: {
-      AI_URL: opts.aiURL,
-      API_KEY: "not-set-for-ollama",
-      GENERATE_DEFAULTS: {
-        WIDTH: opts.width ?? 1024,
-        HEIGHT: opts.height ?? 1024,
-        STEPS: opts.steps ?? 8,
-      },
-      MODELS: {
-        PROMPT_WRITER: opts.promptWriterModelName,
-        IMAGE_READER: opts.imageReaderModelName,
-      },
-    },
-    promptWriterModel: opts.promptWriterModel,
-    imageReaderModel: opts.imageReaderModel,
-  };
+	return {
+		config: {
+			AI_URL: opts.aiURL,
+			API_KEY: "not-set-for-ollama",
+			GENERATE_DEFAULTS: {
+				WIDTH: opts.width ?? 1024,
+				HEIGHT: opts.height ?? 1024,
+				STEPS: opts.steps ?? 8,
+			},
+			MODELS: {
+				PROMPT_WRITER: opts.promptWriterModelName,
+				IMAGE_READER: opts.imageReaderModelName,
+			},
+		},
+		promptWriterModel: opts.promptWriterModel,
+		imageReaderModel: opts.imageReaderModel,
+	};
 }
 
 /**
@@ -98,66 +100,67 @@ function buildNodeDeps(opts: PipelineRunOptions): NodeDeps {
  * 5. Waits for completion (or timeout)
  */
 export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
-  // ── Step 1: Detect resume point ──
-  const lastCycle = detectLastCycle(opts.trackDir);
-  const cyclesToRun = opts.numCycles - Math.max(lastCycle, 0);
+	// ── Step 1: Detect resume point ──
+	const lastCycle = detectLastCycle(opts.trackDir);
+	const cyclesToRun = opts.numCycles - Math.max(lastCycle, 0);
 
-  if (cyclesToRun <= 0) {
-    console.log(`🟢 All ${opts.numCycles} cycles already complete for ${opts.trackDir}`);
-    return;
-  }
+	if (cyclesToRun <= 0) {
+		console.log(
+			`🟢 All ${opts.numCycles} cycles already complete for ${opts.trackDir}`,
+		);
+		return;
+	}
 
-  const actualStartCycle = Math.max(lastCycle, 0);
-  console.log(
-    `🔵 Track: ${opts.trackDir} | Last cycle: ${lastCycle} | Running cycles ${actualStartCycle} to ${opts.numCycles - 1}`,
-  );
+	const actualStartCycle = Math.max(lastCycle, 0);
+	console.log(
+		`🔵 Track: ${opts.trackDir} | Last cycle: ${lastCycle} | Running cycles ${actualStartCycle} to ${opts.numCycles - 1}`,
+	);
 
-  // ── Step 2: Build pipeline ──
-  const deps = buildNodeDeps(opts);
-  const pipeline = buildGarkbitPipeline(deps);
+	// ── Step 2: Build pipeline ──
+	const deps = buildNodeDeps(opts);
+	const pipeline = buildGarkbitPipeline(deps);
 
-  // ── Step 3: Create infrastructure ──
-  const bus = createBus();
-  const store = createStore();
-  const runner = new PipelineRunner(pipeline, bus, store);
+	// ── Step 3: Create infrastructure ──
+	const bus = createBus();
+	const store = createStore();
+	const runner = new PipelineRunner(pipeline, bus, store);
 
-  // ── Step 4: Start the pipeline ──
-  await runner.start();
+	// ── Step 4: Start the pipeline ──
+	await runner.start();
 
-  // ── Step 5: Submit the job (with custom seed data for resume) ──
-  const jobId = opts.trackDir.replace(/\//g, "-").replace(/^[.-]+/, "");
-  const seedData = {
-    mode: opts.mode,
-    cycle: actualStartCycle,
-    totalCycles: opts.numCycles,
-    trackDir: opts.trackDir,
-    genModel: opts.genModel,
-    lightCycle: opts.lightCycles ?? 0,
-    initialPrompt: opts.initialPrompt,
-    completedSteps: [],
-    status: "pending" as const,
-  };
+	// ── Step 5: Submit the job (with custom seed data for resume) ──
+	const jobId = opts.trackDir.replace(/\//g, "-").replace(/^[.-]+/, "");
+	const seedData = {
+		mode: opts.mode,
+		cycle: actualStartCycle,
+		totalCycles: opts.numCycles,
+		trackDir: opts.trackDir,
+		genModel: opts.genModel,
+		lightCycle: opts.lightCycles ?? 0,
+		initialPrompt: opts.initialPrompt,
+		completedSteps: [],
+		status: "pending" as const,
+	};
 
-  // Listen for pipeline completion
-  const lastStep = pipeline.steps[pipeline.steps.length - 1];
-  if (!lastStep) throw new Error("Pipeline has no steps");
-  const finalTopic = lastStep.outputTopic;
-  bus.subscribe(finalTopic, async (envelope) => {
-    const p = envelope.payload as { id?: string };
-    if (p.id !== jobId) return;
+	// Listen for pipeline completion
+	// The pipeline ends when generate publishes to "pipeline.complete" (not the last step's output)
+	bus.subscribe("pipeline.complete", async (envelope) => {
+		const p = envelope.payload as { id?: string };
+		if (p?.id !== jobId) return;
+		const record = store.get<{ status?: string }>(jobId);
+		if (record?.status === "complete") {
+			console.log(`\n${"=".repeat(60)}`);
+			console.log(`🎉  PIPELINE COMPLETE — ${opts.trackDir}`);
+			console.log(`${"=".repeat(60)}\n`);
+			setTimeout(() => process.exit(0), 500);
+		}
+	});
 
-    const record = store.get<{ status?: string }>(jobId);
-    if (record?.status === "complete") {
-      console.log(`\n${"=".repeat(60)}`);
-      console.log(`🎉  PIPELINE COMPLETE — ${opts.trackDir}`);
-      console.log(`${"=".repeat(60)}\n`);
-      setTimeout(() => process.exit(0), 500);
-    }
-  });
-
-  // submitJob handles seeding + publishing in one call
-  await runner.submitJob(pipeline.startTopic, seedData);
-  console.log(`[pipeline] 🚀  submitted (job ${jobId}, start cycle ${actualStartCycle})\n`);
+	// submitJob handles seeding + publishing in one call
+	await runner.submitJob(pipeline.startTopic, seedData);
+	console.log(
+		`[pipeline] 🚀  submitted (job ${jobId}, start cycle ${actualStartCycle})\n`,
+	);
 }
 
 /**
@@ -165,55 +168,61 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
  * This is the thin wrapper that replaces the current index.ts.
  */
 export async function runFromCLI(
-  numCycles: number,
-  trackNum: number,
-  initialPrompt: string,
-  mode: "art" | "photo",
-  opts?: Partial<Pick<PipelineRunOptions, "preserveContextMemory">>,
+	numCycles: number,
+	trackNum: number,
+	initialPrompt: string,
+	mode: "art" | "photo",
+	opts?: Partial<Pick<PipelineRunOptions, "preserveContextMemory">>,
 ): Promise<void> {
-  // Load config
-  const config = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), "config.json"), "utf-8"),
-  ) as Config;
+	// Load config
+	const config = JSON.parse(
+		fs.readFileSync(path.join(process.cwd(), "config.json"), "utf-8"),
+	) as Config;
 
-  // Determine track directory
-  const trackDir = path.join(os.homedir(), config.TRACK_PATH, trackNum.toString());
+	// Determine track directory
+	const trackDir = path.join(
+		os.homedir(),
+		config.TRACK_PATH,
+		trackNum.toString(),
+	);
 
-  // Ensure track directory exists
-  if (!fs.existsSync(trackDir)) {
-    fs.mkdirSync(trackDir, { recursive: true });
-  }
+	// Ensure track directory exists
+	if (!fs.existsSync(trackDir)) {
+		fs.mkdirSync(trackDir, { recursive: true });
+	}
 
-  // Initialize LLM models
-  const { promptWriterModel, imageReaderModel } = await import("../llms.js").then((m) =>
-    m.default(config),
-  );
+	// Initialize LLM models
+	const { promptWriterModel, imageReaderModel } = await import(
+		"../llms.js"
+	).then((m) => m.default(config));
 
-  // Determine gen model
-	const genModels = [
-		config.MODELS.IMAGE_GENERATORS.f2k4b,
-	];
-  const genModel = genModels[0] ?? "";
-  const genModelSecondary = genModels.length > 1 ? (genModels[1] ?? genModels[0]) : genModels[0];
+	// Determine gen model
+	const genModels = config.USE_GEN_MODELS.map(
+		(m) =>
+			config.MODELS.IMAGE_GENERATORS[
+				m as keyof typeof config.MODELS.IMAGE_GENERATORS
+			],
+	);
+	const genModel = genModels[0] ?? "";
+	const genModelSecondary =
+		genModels.length > 1 ? (genModels[1] ?? genModels[0]) : genModels[0];
 
-
-
-  await runPipeline({
-    mode,
-    numCycles,
-    trackDir,
-    initialPrompt,
-    genModel,
-    genModelSecondary,
-    lightCycles: config.LIGHT_CYCLES,
-    preserveContextMemory: opts?.preserveContextMemory,
-    aiURL: config.AI_URL,
-    promptWriterModelName: config.MODELS.PROMPT_WRITER,
-    imageReaderModelName: config.MODELS.IMAGE_READER,
-    promptWriterModel,
-    imageReaderModel,
+	await runPipeline({
+		mode,
+		numCycles,
+		trackDir,
+		initialPrompt,
+		genModel,
+		genModelSecondary,
+		lightCycles: config.LIGHT_CYCLES,
+		preserveContextMemory: opts?.preserveContextMemory,
+		aiURL: config.AI_URL,
+		promptWriterModelName: config.MODELS.PROMPT_WRITER,
+		imageReaderModelName: config.MODELS.IMAGE_READER,
+		promptWriterModel,
+		imageReaderModel,
 		width: config.GENERATE_DEFAULTS.WIDTH,
 		height: config.GENERATE_DEFAULTS.HEIGHT,
 		steps: config.GENERATE_DEFAULTS.STEPS,
-  });
+	});
 }
