@@ -30,7 +30,7 @@ Edit `config.json` to set your models and defaults:
     "HEIGHT": 1024,
     "STEPS": 8,
   },
-  "LIGHT_CYCLES": 0, // Number of light cycles to run (0 = no light cycles)
+  "LIGHT_CYCLES": 0, // Number of light cycles (generate 50% size images) to run
   "MODELS": {
     "PROMPT_WRITER": "...", // LLM for prompt generation
     "IMAGE_READER": "...", // Vision model for image analysis
@@ -42,6 +42,8 @@ Edit `config.json` to set your models and defaults:
       "f2k9b": "...",
     },
   },
+  "USE_GEN_MODELS": ["f2k4b"], // The models that will be used for the image generations
+
 }
 ```
 

@@ -3,9 +3,9 @@
 	"API_KEY": "not-set-for-ollama",
 	"TRACK_PATH": ".tracks",
 	"GENERATE_DEFAULTS": {
-		"WIDTH": 512,
-		"HEIGHT": 512,
-		"STEPS": 4
+		"WIDTH": 1024,
+		"HEIGHT": 1024,
+		"STEPS": 8
 	},
 	"LIGHT_CYCLES": 0,
 	"MODELS": {
@@ -18,5 +18,5 @@
 			"f2k9b": "x/flux2-klein:9b"
 		}
 	},
-	"USE_GEN_MODELS": ["f2k4b"]
+	"USE_GEN_MODELS": ["zitfp8"]
 }
