@@ -1,6 +1,6 @@
 import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
-import { getRecord, updateRecord } from "./shared/store-helpers.js";
+import { updateRecord } from "./shared/store-helpers.js";
 import {
   generateImage,
   calcDimensions,
@@ -19,9 +19,19 @@ import { writeBase64Image } from "./shared/image-utils.js";
 export function createGenerateNode(deps: NodeDeps): Node {
   return {
     name: "generate",
+    inputTopics: ["promptZero.done", "promptWriter.done"],
     async process(_content: unknown, ctx: NodeContext) {
+      const record = ctx.record as typeof ctx.record & {
+        trackDir: string;
+        cycle: number;
+        totalCycles: number;
+        lightCycle: number;
+        genModel: string;
+        promptZeroPrompt?: string;
+        newPrompt?: string;
+        prompt?: string;
+      };
       const store = ctx.store;
-      const record = getRecord(store, ctx.jobId);
 
       // Determine which prompt to use
       const prompt =
@@ -86,7 +96,7 @@ export function createGenerateNode(deps: NodeDeps): Node {
           // imageReader clears it when starting the next cycle.
         },
         nextTopic: isLastCycle ? "pipeline.complete" : "generate.done",
-      };
+      } as const;
     },
   };
 }

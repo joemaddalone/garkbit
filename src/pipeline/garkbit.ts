@@ -21,7 +21,7 @@ import {
  * imageReader always triggers promptWriter.
  * promptWriter always triggers generate.
  *
- * generate subscribes to two topics (two steps):
+ * generate listens on two topics via inputTopics — no duplicate steps needed:
  *   - promptZero.done (cycle 0)
  *   - promptWriter.done (cycles 1+)
  */
@@ -48,14 +48,10 @@ export function buildGarkbitPipeline(deps: NodeDeps): Pipeline {
         outputTopic: "promptZero.done",
       },
       // ── Generate: receives prompt from promptZero or promptWriter ──
+      // (inputTopics on the node handles multi-topic subscription)
       {
         node: createGenerateNode(deps),
         inputTopic: "promptZero.done",
-        outputTopic: "generate.done",
-      },
-      {
-        node: createGenerateNode(deps),
-        inputTopic: "promptWriter.done",
         outputTopic: "generate.done",
       },
       // ── Analyze → re-prompt → generate loop ──

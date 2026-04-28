@@ -1,6 +1,6 @@
 import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
-import { getRecord, updateRecord } from "./shared/store-helpers.js";
+import { updateRecord } from "./shared/store-helpers.js";
 import fs from "node:fs";
 
 /**
@@ -14,16 +14,18 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
   return {
     name: "promptZero",
     async process(_content: unknown, ctx: NodeContext) {
+      const record = ctx.record as typeof ctx.record & {
+        cycle: number;
+        initialPrompt?: string;
+        trackDir: string;
+        mode: "art" | "photo";
+      };
       const store = ctx.store;
-      const record = getRecord(store, ctx.jobId);
 
       // Only run for cycle 0 with an initial prompt
       if (record.cycle !== 0 || !record.initialPrompt) {
         console.log(`[promptZero] ⏭  skipping (cycle=${record.cycle}, no initialPrompt)`);
-        return {
-          patch: {},
-          publishTo: "generate.done",
-        };
+        return { patch: {}, nextTopic: "generate.done" } as const;
       }
 
       // Write prompt to disk (same as existing behavior)
@@ -57,8 +59,8 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
 
       return {
         patch: { promptZeroPrompt: prompt },
-        publishTo: "promptZero.done",
-      };
+        nextTopic: "promptZero.done",
+      } as const;
     },
   };
 }

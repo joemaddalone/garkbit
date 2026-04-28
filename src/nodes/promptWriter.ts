@@ -1,6 +1,6 @@
 import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
-import { getRecord, updateRecord } from "./shared/store-helpers.js";
+import { updateRecord } from "./shared/store-helpers.js";
 import fs from "node:fs";
 
 /**
@@ -13,8 +13,13 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
   return {
     name: "promptWriter",
     async process(_content: unknown, ctx: NodeContext) {
+      const record = ctx.record as typeof ctx.record & {
+        analysis?: unknown;
+        trackDir: string;
+        cycle: number;
+        mode: "art" | "photo";
+      };
       const store = ctx.store;
-      const record = getRecord(store, ctx.jobId);
 
       if (!record.analysis) {
         throw new Error("PromptWriterNode: no analysis in store");
@@ -50,8 +55,8 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
 
       return {
         patch: { newPrompt },
-        publishTo: "promptWriter.done",
-      };
+        nextTopic: "promptWriter.done",
+      } as const;
     },
   };
 }

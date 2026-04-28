@@ -1,6 +1,6 @@
 import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
-import { getRecord, updateRecord } from "./shared/store-helpers.js";
+import { updateRecord } from "./shared/store-helpers.js";
 import {
   resizeImage,
   readImageAsBase64,
@@ -18,8 +18,13 @@ export function createImageReaderNode(deps: NodeDeps): Node {
   return {
     name: "imageReader",
     async process(_content: unknown, ctx: NodeContext) {
+      const record = ctx.record as typeof ctx.record & {
+        imagePath?: string;
+        cycle: number;
+        mode: "art" | "photo";
+        prompt?: string;
+      };
       const store = ctx.store;
-      const record = getRecord(store, ctx.jobId);
 
       if (!record.imagePath) {
         throw new Error("ImageReaderNode: no imagePath in store");
@@ -65,8 +70,8 @@ export function createImageReaderNode(deps: NodeDeps): Node {
 
       return {
         patch: { analysis: result },
-        publishTo: "imageReader.done",
-      };
+        nextTopic: "imageReader.done",
+      } as const;
     },
   };
 }

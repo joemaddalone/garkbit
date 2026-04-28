@@ -124,7 +124,8 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
   // ── Step 4: Start the pipeline ──
   await runner.start();
 
-  // ── Step 5: Submit the job ──
+  // ── Step 5: Submit the job (with custom seed data for resume) ──
+  const jobId = opts.trackDir.replace(/\//g, "-").replace(/^[.-]+/, "");
   const seedData = {
     mode: opts.mode,
     cycle: actualStartCycle,
@@ -136,12 +137,6 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
     completedSteps: [],
     status: "pending" as const,
   };
-
-  // Seed the store directly (bypass the seedFn so we can control resume state)
-  const jobId = opts.trackDir.replace(/\//g, "-").replace(/^[.-]+/, "");
-  store.set(jobId, seedData as Record<string, unknown>);
-
-  console.log(`[pipeline] 📦  store seeded  (job ${jobId}, start cycle ${actualStartCycle})`);
 
   // Listen for pipeline completion
   const lastStep = pipeline.steps[pipeline.steps.length - 1];
@@ -160,9 +155,9 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
     }
   });
 
-  // Kick off the pipeline
-  await bus.publish(pipeline.startTopic, { id: jobId }, "pipeline");
-  console.log(`[pipeline] 🚀  fired "${pipeline.startTopic}"  (job ${jobId})\n`);
+  // submitJob handles seeding + publishing in one call
+  await runner.submitJob(pipeline.startTopic, seedData);
+  console.log(`[pipeline] 🚀  submitted (job ${jobId}, start cycle ${actualStartCycle})\n`);
 }
 
 /**
