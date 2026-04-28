@@ -79,37 +79,6 @@ Each cycle writes to the track directory (`~/.tracks/<track_number>/`):
 | `prompt_N.txt`      | Prompt used to generate cycle N  |
 | `description_N.txt` | Structured analysis of cycle N-1 |
 
-## Project Structure
-
-```
-├── index.ts                    # CLI entry point
-├── config.json                 # Model & generation settings
-├── src/
-│   ├── index.ts                # Main orchestrator
-│   ├── types.ts                # Shared TypeScript types
-│   ├── llms.ts                 # LLM client initialisation
-│   ├── agents/
-│   │   ├── generate.ts         # Image generation via Ollama API
-│   │   ├── prompts.ts          # Shared system prompt constants
-│   │   ├── art/                # Art-mode agents
-│   │   │   ├── image-reader.ts
-│   │   │   ├── prompt-writer.ts
-│   │   │   └── prompt-zero.ts
-│   │   └── photo/              # Photo-mode agents
-│   │       ├── image-reader.ts
-│   │       ├── prompt-writer.ts
-│   │       └── prompt-zero.ts
-│   └── lib/
-│       ├── init-cycle.ts       # Cycle 0 setup & resume detection
-│       ├── run-cycle.ts        # Single cycle execution
-│       ├── team.ts             # Agent team factory (art / photo)
-│       ├── read-image.ts       # Image loading & analysis orchestration
-│       ├── resizer.ts          # Image resize for vision model input
-│       ├── parse-llm-json.ts   # LLM JSON extraction & validation
-│       └── unload-model.ts     # Free GPU/CPU between steps
-└── package.json
-```
-
 ## Linting & Formatting
 
 ```bash

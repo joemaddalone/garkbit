@@ -1,59 +1,40 @@
 import config from "./config.json";
-import main from "./src/index.ts";
+import { runFromCLI } from "./src/pipeline/run.js";
 import fs from "node:fs";
 import path from "node:path";
 import * as os from "node:os";
 
 const go = async () => {
-
 	const numCyclesArg = process.argv[2];
 	const initialPrompt = process.argv[3];
 	const mode = process.argv[4] as "art" | "photo";
 
 	if (!numCyclesArg) {
 		console.log(
-			"🔴 Usage: bun run index.ts <num_cycles> [initial_prompt] [mode]",
+			"🔴 Usage: bun run index.ts <num_cycles> [initial_prompt] [art|photo]",
 		);
 		process.exit(1);
 	}
 
 	const numCycles = parseInt(numCyclesArg, 10);
 
-	// read all existing folders in config.TRACK_PATH
-	const trackPath = path.join(os.homedir(), config.TRACK_PATH);
-	const existingTracks = fs.readdirSync(trackPath).map(f => Number(f)).filter(f => !Number.isNaN(f));
-	// sort sequentially
-	existingTracks.sort((a, b) => a - b);
-	const trackNum = (existingTracks.pop() || 0) + 1;
-
-
 	if (numCycles < 1) {
 		console.log("🔴 Number of cycles must be at least 1.");
 		process.exit(1);
 	}
 
-	if (trackNum < 1) {
-		console.log("🔴 Track number must be at least 1.");
-		process.exit(1);
-	}
+	// Find the next available track number
+	const trackPath = path.join(os.homedir(), config.TRACK_PATH);
+	const existingTracks = fs
+		.readdirSync(trackPath)
+		.map((f) => Number(f))
+		.filter((f) => !Number.isNaN(f));
+	existingTracks.sort((a, b) => a - b);
+	const trackNum = (existingTracks.pop() || 0) + 1;
 
+	console.log(`🔵 Starting new track ${trackNum} with ${numCycles} cycles`);
 
-	const mainConfig = {
-		...config,
-		numCycles,
-		trackNum,
-		initialPrompt: initialPrompt,
-	};
-
-	// You need to set at least one of these from the models in config.json and available in Ollama
-	// The first model is used for the first cycle, the second model is used for the remaining cycles
-	// If you only want to use one model, just set one model, or set both to the same model
-	const genModels = [
-		config.MODELS.IMAGE_GENERATORS.zitfp8,
-		config.MODELS.IMAGE_GENERATORS.zitfp8,
-	];
-
-	main(mainConfig, genModels, mode || "art");
+	await runFromCLI(numCycles, trackNum, initialPrompt ?? "", mode || "art");
 };
 
 go().catch((err) => {

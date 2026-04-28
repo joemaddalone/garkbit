@@ -3,9 +3,9 @@
 	"API_KEY": "not-set-for-ollama",
 	"TRACK_PATH": ".tracks",
 	"GENERATE_DEFAULTS": {
-		"WIDTH": 1024,
-		"HEIGHT": 1024,
-		"STEPS": 8
+		"WIDTH": 512,
+		"HEIGHT": 512,
+		"STEPS": 4
 	},
 	"LIGHT_CYCLES": 0,
 	"MODELS": {

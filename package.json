@@ -18,6 +18,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
     "ai": "^6.0.116",
+    "norkostrat": "link:norkostrat",
     "sharp": "^0.34.5",
     "zod": "^4.3.6",
     "zugar": "^1.0.1"
