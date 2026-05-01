@@ -33,11 +33,9 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
 
       // Import zugar agent dynamically to avoid circular deps
       const { forward } =
-        record.mode === "art"
-          ? await import("../agents/art/prompt-zero.js")
-          : await import("../agents/photo/prompt-zero.js");
+          await import("../agents/prompt-zero.ts");
 
-      const result = await forward({
+      const result = await forward(record.mode, {
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.promptWriterModel as any,
         initial_prompt: record.initialPrompt,

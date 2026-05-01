@@ -31,10 +31,7 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       }
 
       // Import zugar agent dynamically
-      const { forward } =
-        record.mode === "art"
-          ? await import("../agents/art/image-reader.js")
-          : await import("../agents/photo/image-reader.js");
+      const { forward } = await import("../agents/image-reader.ts");
 
       // Clear per-cycle data from previous iteration
       updateRecord(store, ctx.jobId, {
@@ -56,7 +53,7 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       const image = readImageAsBase64(basePath);
 
       // Analyze image
-      const result = await forward({
+      const result = await forward(record.mode, {
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.imageReaderModel as any,
         image,

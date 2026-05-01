@@ -34,15 +34,10 @@ export type PhotoAnalysis = {
 	overallFeeling: string;
 };
 
-/** Contract for a prompt-zero agent (art variant). */
-export type PromptZero_Art = {
-	forward: (input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
+export type PromptZero = {
+	forward: (type: "art" | "photo", input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
 };
 
-/** Contract for a prompt-zero agent (photo variant). */
-export type PromptZero_Photo = {
-	forward: (input: { model: LanguageModel; initial_prompt: string; }) => Promise<{ prompt: string; }>;
-};
 
 /** Application-level configuration loaded from config.json. */
 export type Config = {

@@ -27,11 +27,9 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
 
       // Import zugar agent dynamically
       const { forward } =
-        record.mode === "art"
-          ? await import("../agents/art/prompt-writer.js")
-          : await import("../agents/photo/prompt-writer.js");
+          await import("../agents/prompt-writer.ts");
 
-      const result = await forward({
+      const result = await forward(record.mode, {
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.promptWriterModel as any,
         // biome-ignore lint/suspicious/noExplicitAny: ArtAnalysis/PhotoAnalysis shape mismatch
