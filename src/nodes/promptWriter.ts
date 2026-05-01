@@ -2,6 +2,14 @@ import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
 import { updateRecord } from "./shared/store-helpers.js";
 import fs from "node:fs";
+import artSchema from "../agents/artschema";
+import photoSchema from "../agents/photoschema";
+import type { ArtAnalysis, PhotoAnalysis } from "../types";
+import { zugar, z } from "zugar";
+
+const outputSchema = z.object({
+	prompt: z.string(),
+});
 
 /**
  * PromptWriterNode — generates a refined prompt from the image analysis.
@@ -13,30 +21,28 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
   return {
     name: "promptWriter",
     async process(_content: unknown, ctx: NodeContext) {
-      const record = ctx.record as typeof ctx.record & {
-        analysis?: unknown;
-        trackDir: string;
-        cycle: number;
-        mode: "art" | "photo";
-      };
+      const record = ctx.record as typeof ctx.record & (
+        | { mode: "art"; analysis: ArtAnalysis; trackDir: string; cycle: number; }
+        | { mode: "photo"; analysis: PhotoAnalysis; trackDir: string; cycle: number; }
+      );
       const store = ctx.store;
 
       if (!record.analysis) {
         throw new Error("PromptWriterNode: no analysis in store");
       }
 
-      // Import zugar agent dynamically
-      const { forward } =
-          await import("../agents/prompt-writer.ts");
+      const baseConfig = {
+        description: "Generate a verbose image generation prompt for an image.",
+        temperature: 0.7,
+        maxTokens: 64000,
+        schema: outputSchema,
+        model: deps.promptWriterModel,
+        inputKind: "schema" as const,
+      };
 
-      const result = await forward({
-        // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
-        model: deps.promptWriterModel as any,
-        mode: record.mode,
-        // biome-ignore lint/suspicious/noExplicitAny: ArtAnalysis/PhotoAnalysis shape mismatch
-        analysis: record.analysis as any,
-        cycle: record.cycle,
-      });
+      const result = record.mode === "photo"
+        ? await zugar({ ...baseConfig, inputSchema: photoSchema })({ data: record.analysis })
+        : await zugar({ ...baseConfig, inputSchema: artSchema })({ data: record.analysis });
 
       const newPrompt = result.prompt;
       if (!newPrompt) {
