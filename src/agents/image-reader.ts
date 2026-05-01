@@ -21,13 +21,9 @@ export async function forward(
 		throw new Error("Image reader model not provided");
 	}
 
-	const schema = input.mode === "photo" ? photoSchema : artSchema;
-	const description =
-		input.mode === "photo" ? "Analyze this photo." : "Analyze this artwork.";
-
 	const reader = zugar({
-		description: description,
-		schema,
+		description: "Analyze this image.",
+		schema: input.mode === "photo" ? photoSchema : artSchema,
 		model: input.model,
 		inputKind: "image",
 	});

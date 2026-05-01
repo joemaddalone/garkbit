@@ -25,14 +25,11 @@ export async function forward(
 		throw new Error("Image reader model not provided");
 	}
 
-	const description = input.mode === "photo" ? "Generate a verbose image generation prompt for a photo." : "Generate a verbose image generation prompt for an artwork.";
-	const schema = input.mode === "photo" ? photoSchema : artSchema;
-
 	const agent = zugar({
-		description: description,
+		description: "Generate a verbose image generation prompt for an image.",
 		temperature: 0.7,
 		maxTokens: 64000,
-		inputSchema: schema,
+		inputSchema: input.mode === "photo" ? photoSchema : artSchema,
 		schema: outputSchema,
 		model: input.model,
 		inputKind: "schema",
