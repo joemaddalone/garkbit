@@ -7,6 +7,10 @@ import {
   resizedImagePath,
   deleteResizedImage,
 } from "./shared/image-utils.js";
+import { zugar } from "zugar";
+import artSchema from "../agents/artschema";
+import photoSchema from "../agents/photoschema";
+
 
 /**
  * ImageReaderNode — analyzes a generated image using a vision LLM.
@@ -30,9 +34,6 @@ export function createImageReaderNode(deps: NodeDeps): Node {
         throw new Error("ImageReaderNode: no imagePath in store");
       }
 
-      // Import zugar agent dynamically
-      const { forward } = await import("../agents/image-reader.ts");
-
       // Clear per-cycle data from previous iteration
       updateRecord(store, ctx.jobId, {
         promptZeroPrompt: undefined,
@@ -53,13 +54,12 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       const image = readImageAsBase64(basePath);
 
       // Analyze image
-      const result = await forward({
-        // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
-        model: deps.imageReaderModel as any,
-        image,
-        mode: record.mode,
-        context: record.prompt, // pass previous prompt as context
-      });
+      const result = await zugar({
+        description: "Analyze this image.",
+        schema: record.mode === "photo" ? photoSchema : artSchema,
+        model: deps.imageReaderModel,
+        inputKind: "image",
+      })({ image });
 
       // Cleanup resized image
       deleteResizedImage(resizedPath);

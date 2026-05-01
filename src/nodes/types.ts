@@ -1,4 +1,5 @@
 import type { ArtAnalysis, PhotoAnalysis } from "../types.js";
+import type { LanguageModel } from "ai";
 
 /**
  * The shape of a record in the norkostrat KV store for a garkbit pipeline job.
@@ -53,6 +54,6 @@ export interface NodeDeps {
       IMAGE_READER: string;
     };
   };
-  promptWriterModel: unknown; // LanguageModel from ai
-  imageReaderModel: unknown; // LanguageModel from ai
+  promptWriterModel: LanguageModel;
+  imageReaderModel: LanguageModel;
 }
