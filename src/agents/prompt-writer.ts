@@ -14,9 +14,10 @@ const outputSchema = z.object({
  * @param input.context  Optional previous prompt for continuity.
  */
 export async function forward(
-	type: "art" | "photo",
+
 	input: {
 		model: LanguageModel;
+		mode: "art" | "photo";
 		analysis: ArtAnalysis;
 		cycle: number;
 	}) {
@@ -24,8 +25,8 @@ export async function forward(
 		throw new Error("Image reader model not provided");
 	}
 
-	const description = type === "photo" ? "Generate a verbose image generation prompt for a photo." : "Generate a verbose image generation prompt for an artwork.";
-	const schema = type === "photo" ? photoSchema : artSchema;
+	const description = input.mode === "photo" ? "Generate a verbose image generation prompt for a photo." : "Generate a verbose image generation prompt for an artwork.";
+	const schema = input.mode === "photo" ? photoSchema : artSchema;
 
 	const agent = zugar({
 		description: description,

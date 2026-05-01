@@ -29,9 +29,10 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
       const { forward } =
           await import("../agents/prompt-writer.ts");
 
-      const result = await forward(record.mode, {
+      const result = await forward({
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.promptWriterModel as any,
+        mode: record.mode,
         // biome-ignore lint/suspicious/noExplicitAny: ArtAnalysis/PhotoAnalysis shape mismatch
         analysis: record.analysis as any,
         cycle: record.cycle,

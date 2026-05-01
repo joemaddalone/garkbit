@@ -53,10 +53,11 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       const image = readImageAsBase64(basePath);
 
       // Analyze image
-      const result = await forward(record.mode, {
+      const result = await forward({
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.imageReaderModel as any,
         image,
+        mode: record.mode,
         context: record.prompt, // pass previous prompt as context
       });
 

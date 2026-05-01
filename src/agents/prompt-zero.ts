@@ -14,9 +14,8 @@ const photoPrompt = "Generate a verbose image generation prompt that addresses c
  * @param input.initial_prompt  The user's seed/idea string.
  */
 export async function forward(
-	type: "art" | "photo",
-	input: { model: LanguageModel; initial_prompt: string; }) {
-	const prompt = type === "photo" ? photoPrompt : artPrompt;
+	input: { model: LanguageModel; mode: "art" | "photo"; initial_prompt: string; }) {
+	const prompt = input.mode === "photo" ? photoPrompt : artPrompt;
 	const agent = zugar({
 		description: prompt,
 		temperature: 0.7,

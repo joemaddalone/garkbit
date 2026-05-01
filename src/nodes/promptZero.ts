@@ -35,9 +35,10 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
       const { forward } =
           await import("../agents/prompt-zero.ts");
 
-      const result = await forward(record.mode, {
+      const result = await forward({
         // biome-ignore lint/suspicious/noExplicitAny: zugar expects LanguageModel from 'ai' package
         model: deps.promptWriterModel as any,
+        mode: record.mode,
         initial_prompt: record.initialPrompt,
       });
 
