@@ -1,11 +1,12 @@
 import type { Node, NodeContext } from "norkostrat";
-import type { NodeDeps } from "./types.js";
-import { updateRecord } from "./shared/store-helpers.js";
+import type { NodeDeps } from "../types.js";
 import fs from "node:fs";
 import { z, zugar } from "zugar";
 
 const schema = z.object({
-  prompt: z.string().meta({ description: "A verbose image generation prompt." }),
+  prompt: z
+    .string()
+    .meta({ description: "A verbose image generation prompt." }),
 });
 
 /**
@@ -23,18 +24,22 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
         cycle: number;
         initialPrompt?: string;
         trackDir: string;
-        mode: "art" | "photo";
       };
       const store = ctx.store;
 
       // Only run for cycle 0 with an initial prompt
       if (record.cycle !== 0 || !record.initialPrompt) {
-        console.log(`[promptZero] ⏭  skipping (cycle=${record.cycle}, no initialPrompt)`);
+        console.log(
+          `[promptZero] ⏭  skipping (cycle=${record.cycle}, no initialPrompt)`,
+        );
         return { patch: {}, nextTopic: "generate.done" } as const;
       }
 
       // Write prompt to disk (same as existing behavior)
-      fs.writeFileSync(`${record.trackDir}/prompt_initial.txt`, record.initialPrompt);
+      fs.writeFileSync(
+        `${record.trackDir}/prompt_initial.txt`,
+        record.initialPrompt,
+      );
 
       // Import zugar agent dynamically to avoid circular deps
       const agent = zugar({
@@ -57,7 +62,7 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
 
       console.log(`[promptZero] ✍️  generated prompt for cycle 0`);
 
-      updateRecord(store, ctx.jobId, {
+      store.update(ctx.jobId, {
         promptZeroPrompt: prompt,
       });
 

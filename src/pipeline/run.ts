@@ -2,7 +2,7 @@ import { createBus, createStore, PipelineRunner } from "norkostrat";
 import type { Config } from "../types.js";
 import type { LanguageModel } from "ai";
 import { buildGarkbitPipeline } from "./garkbit.js";
-import type { NodeDeps } from "../nodes/types.js";
+import type { NodeDeps } from "../types.js";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -11,8 +11,6 @@ import os from "node:os";
  * Options for running a garkbit pipeline.
  */
 export interface PipelineRunOptions {
-  /** Art or photo mode */
-  mode: "art" | "photo";
   /** Number of cycles to run */
   numCycles: number;
   /** Track directory (absolute path) */
@@ -131,7 +129,6 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
   // ── Step 5: Submit the job (with custom seed data for resume) ──
   const jobId = opts.trackDir.replace(/\//g, "-").replace(/^[.-]+/, "");
   const seedData = {
-    mode: opts.mode,
     cycle: actualStartCycle,
     totalCycles: opts.numCycles,
     trackDir: opts.trackDir,
@@ -149,7 +146,6 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
     console.log(`🎉  PIPELINE COMPLETE — ${opts.trackDir}`);
     console.log(`${"=".repeat(60)}\n`);
     setTimeout(() => process.exit(0), 500);
-
   });
 
   // submitJob handles seeding + publishing in one call
@@ -167,7 +163,6 @@ export async function runFromCLI(
   numCycles: number,
   trackNum: number,
   initialPrompt: string,
-  mode: "art" | "photo",
   opts?: Partial<Pick<PipelineRunOptions, "preserveContextMemory">>,
 ): Promise<void> {
   // Load config
@@ -188,15 +183,14 @@ export async function runFromCLI(
   }
 
   // Initialize LLM models
-  const { promptWriterModel, imageReaderModel } = await import(
-    "../llms.js"
-  ).then((m) => m.default(config));
+  const { promptWriterModel, imageReaderModel } =
+    await import("../llms.js").then((m) => m.default(config));
 
   // Determine gen model
   const genModels = config.USE_GEN_MODELS.map(
     (m) =>
       config.MODELS.IMAGE_GENERATORS[
-      m as keyof typeof config.MODELS.IMAGE_GENERATORS
+        m as keyof typeof config.MODELS.IMAGE_GENERATORS
       ],
   );
   const genModel = genModels[0] ?? "";
@@ -204,7 +198,6 @@ export async function runFromCLI(
     genModels.length > 1 ? (genModels[1] ?? genModels[0]) : genModels[0];
 
   await runPipeline({
-    mode,
     numCycles,
     trackDir,
     initialPrompt,

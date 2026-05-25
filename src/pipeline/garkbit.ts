@@ -1,5 +1,5 @@
 import type { Pipeline } from "norkostrat";
-import type { NodeDeps } from "../nodes/types.js";
+import type { NodeDeps } from "../types.js";
 import {
   createPromptZeroNode,
   createGenerateNode,
@@ -32,9 +32,6 @@ export function buildGarkbitPipeline(deps: NodeDeps): Pipeline {
     startTopic: "prompt.input",
     seedFn: (id: string, _topic: string) => ({
       jobId: id,
-      mode: deps.config.MODELS.PROMPT_WRITER
-        ? ("art" as const)
-        : ("photo" as const),
       cycle: 0,
       totalCycles: 1,
       trackDir: "",

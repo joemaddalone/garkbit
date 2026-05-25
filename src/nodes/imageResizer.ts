@@ -1,5 +1,4 @@
 import type { Node, NodeContext } from "norkostrat";
-import { updateRecord } from "./shared/store-helpers.js";
 import { resizeImage, resizedImagePath } from "./shared/image-utils.js";
 
 /**
@@ -32,7 +31,7 @@ export function createImageResizerNode(): Node {
 
       const finalPath = resized ? resizedPath : record.imagePath;
 
-      updateRecord(store, ctx.jobId, {
+      store.update(ctx.jobId, {
         resizedPath: finalPath,
       });
 

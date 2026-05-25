@@ -1,10 +1,8 @@
 import type { Node, NodeContext } from "norkostrat";
-import type { NodeDeps } from "./types.js";
-import { updateRecord } from "./shared/store-helpers.js";
+import type { NodeDeps } from "../types.js";
 import fs from "node:fs";
-import artSchema from "./shared/artschema.js";
-import photoSchema from "./shared/photoschema.js";
-import type { ArtAnalysis, PhotoAnalysis } from "../types";
+import imageSchema from "./shared/imageschema.js";
+import type { ImageAnalysis } from "../types";
 import { zugar, z } from "zugar";
 
 const outputSchema = z.object({
@@ -21,21 +19,11 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
   return {
     name: "promptWriter",
     async process(_content: unknown, ctx: NodeContext) {
-      const record = ctx.record as typeof ctx.record &
-        (
-          | {
-              mode: "art";
-              analysis: ArtAnalysis;
-              trackDir: string;
-              cycle: number;
-            }
-          | {
-              mode: "photo";
-              analysis: PhotoAnalysis;
-              trackDir: string;
-              cycle: number;
-            }
-        );
+      const record = ctx.record as typeof ctx.record & {
+        analysis: ImageAnalysis;
+        trackDir: string;
+        cycle: number;
+      };
       const store = ctx.store;
 
       if (!record.analysis) {
@@ -51,14 +39,9 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
         inputKind: "schema" as const,
       };
 
-      const result =
-        record.mode === "photo"
-          ? await zugar({ ...baseConfig, inputSchema: photoSchema })({
-              data: record.analysis,
-            })
-          : await zugar({ ...baseConfig, inputSchema: artSchema })({
-              data: record.analysis,
-            });
+      const result = await zugar({ ...baseConfig, inputSchema: imageSchema })({
+        data: record.analysis,
+      });
 
       const newPrompt = result.prompt;
       if (!newPrompt) {
@@ -75,7 +58,7 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
         `[promptWriter] ✍️  refined prompt for cycle ${record.cycle}`,
       );
 
-      updateRecord(store, ctx.jobId, {
+      store.update(ctx.jobId, {
         newPrompt,
       });
 

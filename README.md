@@ -2,8 +2,6 @@
 
 Automated image generation pipeline powered by local [Ollama](https://ollama.com) models. Garkbit runs iterative **analyse → re-prompt → generate** cycles: a vision model reads an image, a language model writes a refined prompt, and an image generator produces the next iteration — building on itself over multiple cycles.
 
-Supports two modes: **art** (paintings, illustrations, digital art) and **photo** (photorealistic imagery), each with tailored analysis schemas and prompt engineering.
-
 ## Prerequisites
 
 - [Bun](https://bun.sh) runtime
@@ -43,14 +41,13 @@ Edit `config.json` to set your models and defaults:
     },
   },
   "USE_GEN_MODELS": ["f2k4b"], // The models that will be used for the image generations
-
 }
 ```
 
 ## Usage
 
 ```bash
-bun run index.ts <num_cycles> "[initial_prompt]" "[art|photo]"
+bun run index.ts <num_cycles> "[initial_prompt]"
 ```
 
 | Argument         | Description                              |
@@ -61,7 +58,7 @@ bun run index.ts <num_cycles> "[initial_prompt]" "[art|photo]"
 **Example:**
 
 ```bash
-bun run index.ts 5 "a fox in a misty forest at dawn" "photo"
+bun run index.ts 5 "a fox in a misty forest at dawn"
 ```
 
 This runs 5 cycles on the next available track, starting from the given prompt.

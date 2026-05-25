@@ -1,10 +1,8 @@
 import type { Node, NodeContext } from "norkostrat";
-import type { NodeDeps } from "./types.js";
-import { updateRecord } from "./shared/store-helpers.js";
+import type { NodeDeps } from "../types.js";
 import { readImageAsBase64, deleteResizedImage } from "./shared/image-utils.js";
 import { zugar } from "zugar";
-import artSchema from "./shared/artschema.js";
-import photoSchema from "./shared/photoschema.js";
+import imageSchema from "./shared/imageschema.js";
 
 /**
  * ImageReaderNode — analyzes a generated image using a vision LLM.
@@ -19,7 +17,6 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       const record = ctx.record as typeof ctx.record & {
         resizedPath: string;
         cycle: number;
-        mode: "art" | "photo";
         prompt?: string;
       };
       const store = ctx.store;
@@ -29,7 +26,7 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       }
 
       // Clear per-cycle data from previous iteration
-      updateRecord(store, ctx.jobId, {
+      store.update(ctx.jobId, {
         promptZeroPrompt: undefined,
         prompt: undefined,
         imagePath: undefined,
@@ -43,7 +40,7 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       // Analyze image
       const result = await zugar({
         description: "Analyze this image.",
-        schema: record.mode === "photo" ? photoSchema : artSchema,
+        schema: imageSchema,
         model: deps.imageReaderModel,
         inputKind: "image",
       })({ image });

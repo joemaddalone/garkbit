@@ -1,6 +1,5 @@
 import type { Node, NodeContext } from "norkostrat";
-import type { NodeDeps } from "./types.js";
-import { updateRecord } from "./shared/store-helpers.js";
+import type { NodeDeps } from "../types.js";
 import {
   generateImage,
   calcDimensions,
@@ -80,7 +79,7 @@ export function createGenerateNode(deps: NodeDeps): Node {
         console.log(
           `[generate] 🏁 last cycle (${record.cycle}/${record.totalCycles - 1})`,
         );
-        updateRecord(store, ctx.jobId, { status: "complete" });
+        store.update(ctx.jobId, { status: "complete" });
       } else {
         console.log(
           `[generate] 🔄 more cycles — continuing to imageReader (cycle ${nextCycle})`,
