@@ -24,6 +24,7 @@ export interface PipelineRecord {
   // ── Generated image ──
   prompt?: string;
   imagePath?: string;
+  resizedPath?: string;
   prevImagePath?: string;
 
   // ── Image reader output ──

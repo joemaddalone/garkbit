@@ -1,16 +1,10 @@
 import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
 import { updateRecord } from "./shared/store-helpers.js";
-import {
-  resizeImage,
-  readImageAsBase64,
-  resizedImagePath,
-  deleteResizedImage,
-} from "./shared/image-utils.js";
+import { readImageAsBase64, deleteResizedImage } from "./shared/image-utils.js";
 import { zugar } from "zugar";
-import artSchema from "../agents/artschema";
-import photoSchema from "../agents/photoschema";
-
+import artSchema from "./shared/artschema.js";
+import photoSchema from "./shared/photoschema.js";
 
 /**
  * ImageReaderNode — analyzes a generated image using a vision LLM.
@@ -23,15 +17,15 @@ export function createImageReaderNode(deps: NodeDeps): Node {
     name: "imageReader",
     async process(_content: unknown, ctx: NodeContext) {
       const record = ctx.record as typeof ctx.record & {
-        imagePath?: string;
+        resizedPath: string;
         cycle: number;
         mode: "art" | "photo";
         prompt?: string;
       };
       const store = ctx.store;
 
-      if (!record.imagePath) {
-        throw new Error("ImageReaderNode: no imagePath in store");
+      if (!record.resizedPath) {
+        throw new Error("ImageReaderNode: no resizedPath in store");
       }
 
       // Clear per-cycle data from previous iteration
@@ -39,19 +33,12 @@ export function createImageReaderNode(deps: NodeDeps): Node {
         promptZeroPrompt: undefined,
         prompt: undefined,
         imagePath: undefined,
+        resizedPath: undefined,
         analysis: undefined,
         newPrompt: undefined,
       });
 
-      // Resize image for vision model
-      const resizedPath = resizedImagePath(record.imagePath);
-      const resized = await resizeImage(record.imagePath, resizedPath);
-      if (!resized) {
-        console.warn(`[imageReader] ⚠  resize returned no width metadata, using original`);
-      }
-
-      const basePath = resized ? resizedPath : record.imagePath;
-      const image = readImageAsBase64(basePath);
+      const image = readImageAsBase64(record.resizedPath);
 
       // Analyze image
       const result = await zugar({
@@ -62,9 +49,11 @@ export function createImageReaderNode(deps: NodeDeps): Node {
       })({ image });
 
       // Cleanup resized image
-      deleteResizedImage(resizedPath);
+      deleteResizedImage(record.resizedPath);
 
-      console.log(`[imageReader] 📝  analysis complete for cycle ${record.cycle}`);
+      console.log(
+        `[imageReader] 📝  analysis complete for cycle ${record.cycle}`,
+      );
 
       return {
         patch: { analysis: result },

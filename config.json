@@ -18,5 +18,7 @@
 			"f2k9b": "x/flux2-klein:9b"
 		}
 	},
-	"USE_GEN_MODELS": ["zitfp8"]
+	"USE_GEN_MODELS": [
+		"zitfp8"
+	]
 }

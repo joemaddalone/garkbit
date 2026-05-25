@@ -2,13 +2,13 @@ import type { Node, NodeContext } from "norkostrat";
 import type { NodeDeps } from "./types.js";
 import { updateRecord } from "./shared/store-helpers.js";
 import fs from "node:fs";
-import artSchema from "../agents/artschema";
-import photoSchema from "../agents/photoschema";
+import artSchema from "./shared/artschema.js";
+import photoSchema from "./shared/photoschema.js";
 import type { ArtAnalysis, PhotoAnalysis } from "../types";
 import { zugar, z } from "zugar";
 
 const outputSchema = z.object({
-	prompt: z.string(),
+  prompt: z.string(),
 });
 
 /**
@@ -21,10 +21,21 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
   return {
     name: "promptWriter",
     async process(_content: unknown, ctx: NodeContext) {
-      const record = ctx.record as typeof ctx.record & (
-        | { mode: "art"; analysis: ArtAnalysis; trackDir: string; cycle: number; }
-        | { mode: "photo"; analysis: PhotoAnalysis; trackDir: string; cycle: number; }
-      );
+      const record = ctx.record as typeof ctx.record &
+        (
+          | {
+              mode: "art";
+              analysis: ArtAnalysis;
+              trackDir: string;
+              cycle: number;
+            }
+          | {
+              mode: "photo";
+              analysis: PhotoAnalysis;
+              trackDir: string;
+              cycle: number;
+            }
+        );
       const store = ctx.store;
 
       if (!record.analysis) {
@@ -40,9 +51,14 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
         inputKind: "schema" as const,
       };
 
-      const result = record.mode === "photo"
-        ? await zugar({ ...baseConfig, inputSchema: photoSchema })({ data: record.analysis })
-        : await zugar({ ...baseConfig, inputSchema: artSchema })({ data: record.analysis });
+      const result =
+        record.mode === "photo"
+          ? await zugar({ ...baseConfig, inputSchema: photoSchema })({
+              data: record.analysis,
+            })
+          : await zugar({ ...baseConfig, inputSchema: artSchema })({
+              data: record.analysis,
+            });
 
       const newPrompt = result.prompt;
       if (!newPrompt) {
@@ -50,9 +66,14 @@ export function createPromptWriterNode(deps: NodeDeps): Node {
       }
 
       // Write prompt to disk (same as existing behavior)
-      fs.writeFileSync(`${record.trackDir}/prompt_${record.cycle}.txt`, newPrompt);
+      fs.writeFileSync(
+        `${record.trackDir}/prompt_${record.cycle}.txt`,
+        newPrompt,
+      );
 
-      console.log(`[promptWriter] ✍️  refined prompt for cycle ${record.cycle}`);
+      console.log(
+        `[promptWriter] ✍️  refined prompt for cycle ${record.cycle}`,
+      );
 
       updateRecord(store, ctx.jobId, {
         newPrompt,

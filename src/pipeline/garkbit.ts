@@ -3,6 +3,7 @@ import type { NodeDeps } from "../nodes/types.js";
 import {
   createPromptZeroNode,
   createGenerateNode,
+  createImageResizerNode,
   createImageReaderNode,
   createPromptWriterNode,
 } from "../nodes/index.js";
@@ -31,7 +32,9 @@ export function buildGarkbitPipeline(deps: NodeDeps): Pipeline {
     startTopic: "prompt.input",
     seedFn: (id: string, _topic: string) => ({
       jobId: id,
-      mode: deps.config.MODELS.PROMPT_WRITER ? ("art" as const) : ("photo" as const),
+      mode: deps.config.MODELS.PROMPT_WRITER
+        ? ("art" as const)
+        : ("photo" as const),
       cycle: 0,
       totalCycles: 1,
       trackDir: "",
@@ -54,10 +57,16 @@ export function buildGarkbitPipeline(deps: NodeDeps): Pipeline {
         inputTopic: "promptZero.done",
         outputTopic: "generate.done",
       },
+      // ── Resize: receives image from generate ──
+      {
+        node: createImageResizerNode(),
+        inputTopic: "generate.done",
+        outputTopic: "imageResizer.done",
+      },
       // ── Analyze → re-prompt → generate loop ──
       {
         node: createImageReaderNode(deps),
-        inputTopic: "generate.done",
+        inputTopic: "imageResizer.done",
         outputTopic: "imageReader.done",
       },
       {
