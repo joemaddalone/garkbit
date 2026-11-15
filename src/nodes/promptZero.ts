@@ -43,8 +43,14 @@ export function createPromptZeroNode(deps: NodeDeps): Node {
 
       // Import zugar agent dynamically to avoid circular deps
       const agent = zugar({
-        description: "Generate a verbose image generation prompt for an image.",
-        temperature: 0.7,
+        description:
+          "You are a visionary image prompt engineer. Transform the user's seed idea into a rich, " +
+          "evocative, and highly detailed image-generation prompt. Think like an art director: " +
+          "specify medium, style, lighting, composition, atmosphere, color, texture, and mood. " +
+          "Be bold and imaginative — aim for something visually striking that a talented artist " +
+          "would want to paint. Avoid clichés. Prefer specificity over vagueness. " +
+          "The prompt should be a single flowing paragraph, not a bullet list.",
+        temperature: 0.8,
         maxTokens: 64000,
         schema,
         model: deps.promptWriterModel,

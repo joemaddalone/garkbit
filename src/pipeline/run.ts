@@ -21,6 +21,8 @@ export interface PipelineRunOptions {
   genModel: string;
   /** Second image generation model (for non-light cycles) */
   genModelSecondary?: string;
+  /** All available gen models (for model rotation) */
+  genModels?: string[];
   /** Number of light cycles (0 = none) */
   lightCycles?: number;
   /** Whether to preserve context memory across cycles */
@@ -41,6 +43,11 @@ export interface PipelineRunOptions {
   height?: number;
   /** Generation steps */
   steps?: number;
+  /** Generation temperature */
+  temperature?: number;
+
+  /** Creative configuration block */
+  creative?: import("../types.js").CreativeConfig;
 }
 
 /**
@@ -76,7 +83,9 @@ function buildNodeDeps(opts: PipelineRunOptions): NodeDeps {
         WIDTH: opts.width ?? 1024,
         HEIGHT: opts.height ?? 1024,
         STEPS: opts.steps ?? 8,
+        TEMPERATURE: opts.temperature,
       },
+      CREATIVE: opts.creative,
       MODELS: {
         PROMPT_WRITER: opts.promptWriterModelName,
         IMAGE_READER: opts.imageReaderModelName,
@@ -133,7 +142,11 @@ export async function runPipeline(opts: PipelineRunOptions): Promise<void> {
     totalCycles: opts.numCycles,
     trackDir: opts.trackDir,
     genModel: opts.genModel,
+    genModels: opts.genModels ?? [opts.genModel],
     lightCycle: opts.lightCycles ?? 0,
+    temperature: opts.temperature ?? 0.7,
+    creative: opts.creative,
+    promptHistory: [] as string[],
     initialPrompt: opts.initialPrompt,
     completedSteps: [],
     status: "pending" as const,
@@ -203,6 +216,7 @@ export async function runFromCLI(
     initialPrompt,
     genModel,
     genModelSecondary,
+    genModels,
     lightCycles: config.LIGHT_CYCLES,
     preserveContextMemory: opts?.preserveContextMemory,
     aiURL: config.AI_URL,
@@ -213,5 +227,7 @@ export async function runFromCLI(
     width: config.GENERATE_DEFAULTS.WIDTH,
     height: config.GENERATE_DEFAULTS.HEIGHT,
     steps: config.GENERATE_DEFAULTS.STEPS,
+    temperature: config.GENERATE_DEFAULTS.TEMPERATURE,
+    creative: config.CREATIVE,
   });
 }

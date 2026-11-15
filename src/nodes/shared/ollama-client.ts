@@ -16,13 +16,14 @@ export interface GenerateParams {
   height: number;
   steps: number;
   aiURL: string;
+  temperature?: number;
 }
 
 /**
  * Call Ollama's /api/generate endpoint and return the response.
  */
 export async function generateImage(params: GenerateParams): Promise<OllamaGenerateResponse> {
-  const { model, prompt, width, height, steps, aiURL } = params;
+  const { model, prompt, width, height, steps, aiURL, temperature = 0.7 } = params;
 
   const req = await fetch(`${aiURL}/api/generate`, {
     method: "POST",
@@ -37,7 +38,7 @@ export async function generateImage(params: GenerateParams): Promise<OllamaGener
       stream: false,
       steps,
       options: {
-        temperature: 0.5,
+        temperature,
       },
     }),
   });

@@ -20,6 +20,9 @@ export type ImageAnalysis = {
   artisticStyle: string;
   brushworkOrDetail: string;
   colorPalette: string;
+  unexpectedElement: string;
+  suggestedEvolution: string;
+  whatIsMissing: string;
 };
 
 export type PromptZero = {
@@ -27,6 +30,24 @@ export type PromptZero = {
     model: LanguageModel;
     initial_prompt: string;
   }) => Promise<{ prompt: string }>;
+};
+
+/**
+ * Creative configuration loaded from the CREATIVE block in config.json.
+ * Controls temperature ramp, model rotation, aspect-ratio variety,
+ * and random creative injection.
+ */
+export type CreativeConfig = {
+  /** Temperature values per cycle, ascending (e.g. [0.6, 0.7, 0.8, 0.9, 1.0]). */
+  TEMPERATURE_RAMP: number[];
+  /** Whether to rotate through available gen models per cycle. */
+  MODEL_ROTATION: boolean;
+  /** Whether to vary aspect ratio per cycle. */
+  ASPECT_RATIO_VARIETY: boolean;
+  /** Probability [0..1] of randomly injecting a creative directive each cycle. */
+  INJECTION_CHANCE: number;
+  /** Inject a creative directive every N cycles (0 = disable interval-based injection). */
+  INJECTION_INTERVAL: number;
 };
 
 /** Application-level configuration loaded from config.json. */
@@ -40,7 +61,9 @@ export type Config = {
     WIDTH: number;
     HEIGHT: number;
     STEPS: number;
+    TEMPERATURE?: number;
   };
+  CREATIVE?: CreativeConfig;
   MODELS: {
     PROMPT_WRITER: string;
     IMAGE_READER: string;
@@ -68,6 +91,12 @@ export interface PipelineRecord {
   trackDir: string;
   genModel: string;
   lightCycle: number; // number of light cycles (0 = no light cycles)
+
+  // ── Creative pipeline data ──
+  genModels: string[]; // all available gen models (for rotation)
+  temperature: number; // generation temperature for current cycle
+  creative?: CreativeConfig; // creative configuration block
+  promptHistory: string[]; // rolling history of prompts for cycle memory
 
   // ── Cycle 0: seed prompt ──
   initialPrompt?: string;
@@ -103,7 +132,9 @@ export interface NodeDeps {
       WIDTH: number;
       HEIGHT: number;
       STEPS: number;
+      TEMPERATURE?: number;
     };
+    CREATIVE?: CreativeConfig;
     MODELS: {
       PROMPT_WRITER: string;
       IMAGE_READER: string;

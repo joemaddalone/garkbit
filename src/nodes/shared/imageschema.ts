@@ -67,4 +67,16 @@ export default z.object({
   colorPalette: z
     .string()
     .meta({ description: "The dominant color scheme and usage" }),
+  unexpectedElement: z.string().meta({
+    description:
+      "Something in the image that feels surprising, accidental, or novel — a detail that shouldn't work but does",
+  }),
+  suggestedEvolution: z.string().meta({
+    description:
+      "A creative direction for the next iteration — what to amplify, add, change, or explore to make the next image more striking",
+  }),
+  whatIsMissing: z.string().meta({
+    description:
+      "What would make this image more interesting, complete, or emotionally resonant if added or removed",
+  }),
 });
